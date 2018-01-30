@@ -3,6 +3,7 @@ package com.team1389.robot;
 import com.team1389.configuration.PIDConstants;
 import com.team1389.control.SynchronousPIDController;
 import com.team1389.hardware.controls.ControlBoard;
+import com.team1389.hardware.inputs.software.DigitalIn;
 import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.outputs.software.RangeOut;
 import com.team1389.hardware.value_types.Percent;
@@ -20,6 +21,7 @@ public class RobotSoftware extends RobotHardware
 	RangeOut<Percent> motor;
 	Arm arm;
 	TeleopMain main;
+	DigitalIn position;
 	
 
 	public static RobotSoftware getInstance()
@@ -31,6 +33,10 @@ public class RobotSoftware extends RobotHardware
 	{
 		constants = new PIDConstants(0.0001, 0, 0);
 		pid = new SynchronousPIDController<Percent, Position>(constants, armCan.getSensorPositionStream(), armCan.getVoltageController());
+	}
+	public void Position()
+	{
+		position = switchHardware.getSwitchInput();
 	}
 
 }

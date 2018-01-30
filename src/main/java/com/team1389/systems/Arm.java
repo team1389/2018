@@ -12,6 +12,7 @@ import com.team1389.system.Subsystem;
 import com.team1389.util.list.AddList;
 import com.team1389.watch.Watchable;
 import com.team1389.watch.Watcher;
+import com.team1389.watch.info.BooleanInfo;
 
 public class Arm extends Subsystem {
 	PercentOut percent;
@@ -35,11 +36,6 @@ public class Arm extends Subsystem {
 	public void position()
 	{
 		percent.set(controls.rightStickYAxis().get());
-	}
-	public void sensor()
-	{
-		
-		watch = new Watcher();
 	}
 	
 	/*
@@ -76,8 +72,9 @@ public class Arm extends Subsystem {
 	@Override
 	public AddList<Watchable> getSubWatchables(AddList<Watchable> arg0) {
 		// TODO Auto-generated method stub
-		return null;
-	}
+		
+		return arg0.put(new BooleanInfo("object in arm!", ()-> robot.switchHardware.getSwitchInput().get()));	
+		}
 
 	@Override
 	public String getName() {
