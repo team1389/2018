@@ -1,8 +1,10 @@
 package com.team1389.robot;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.team1389.hardware.inputs.hardware.GyroHardware;
 import com.team1389.hardware.inputs.hardware.PDPHardware;
 import com.team1389.hardware.inputs.hardware.SwitchHardware;
+import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.outputs.hardware.VictorHardware;
 import com.team1389.hardware.registry.Registry;
 
@@ -31,7 +33,12 @@ public class RobotHardware extends RobotLayout
 
 	private void initDriveTrain()
 	{
-
+		leftDriveV = new VictorHardware(inv_LEFT_DRIVE_V, pwm_LEFT_DRIVE_V, registry);
+		rightDriveV = new VictorHardware(inv_RIGHT_DRIVE_V, pwm_RIGHT_DRIVE_V, registry);
+		leftDriveT = new CANTalonHardware(inv_LEFT_DRIVE_T, sinv_LEFT_DRIVE_T, FeedbackDevice.QuadEncoder, 1024,
+				can_LEFT_DRIVE_T, registry, t -> t.setSelectedSensorPosition(0, 0, 10));
+		rightDriveT = new CANTalonHardware(inv_RIGHT_DRIVE_T, sinv_RIGHT_DRIVE_T, FeedbackDevice.QuadEncoder, 1024,
+				can_RIGHT_DRIVE_T, registry, t -> t.setSelectedSensorPosition(0, 0, 10));
 	}
 
 	public Registry getRegistry()

@@ -6,7 +6,7 @@ public class RobotConstants {
 	/**
 	 * constants for odometry calculations
 	 */
-	public static final double WheelDiameter = 8; // in
+	public static final double WheelDiameter = 5; // in
 	public static final double TrackWidth = 22; // in
 	public static final double TrackLength = 23;
 	public static final double TrackScrub = 1;
