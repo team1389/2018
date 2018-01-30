@@ -1,9 +1,7 @@
 package com.team1389.robot;
 
-import com.team1389.hardware.inputs.hardware.GyroHardware;
-import com.team1389.hardware.inputs.hardware.PDPHardware;
 import com.team1389.hardware.inputs.hardware.SwitchHardware;
-import com.team1389.hardware.outputs.hardware.VictorHardware;
+import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.registry.Registry;
 
 /**
@@ -31,7 +29,15 @@ public class RobotHardware extends RobotLayout
 
 	private void initDriveTrain()
 	{
+		
+	}
+	
+	public void initArm() 
+	{
 
+		armCan = new CANTalonHardware(false, arm_Can, registry);
+		
+		switchHardware = new SwitchHardware(sensor, registry);
 	}
 
 	public Registry getRegistry()

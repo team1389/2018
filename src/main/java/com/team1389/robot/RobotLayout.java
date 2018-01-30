@@ -1,6 +1,8 @@
 package com.team1389.robot;
 
 import com.team1389.hardware.inputs.hardware.PDPHardware;
+import com.team1389.hardware.inputs.hardware.SwitchHardware;
+import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.registry.Registry;
 
 /**
@@ -14,5 +16,7 @@ public class RobotLayout extends RobotMap {
 	public Registry registry;
 	public PDPHardware pdp;
 	
-
+	public CANTalonHardware armCan;
+	
+	public SwitchHardware switchHardware;
 }

@@ -1,5 +1,8 @@
 package com.team1389.robot;
 
+import com.team1389.hardware.registry.port_types.CAN;
+import com.team1389.hardware.registry.port_types.DIO;
+
 /**
  * The RobotMap is a mapping from the ports sensors and actuators are wired into
  * to a variable name. This provides flexibility changing wiring, makes checking
@@ -22,6 +25,12 @@ package com.team1389.robot;
  */
 public class RobotMap
 {
+	
 	// Drivetrain
 
+	//Arm
+	protected static final CAN arm_Can = new CAN(0);
+	
+	//DIO
+	protected static final DIO sensor = new DIO(1);
 }
