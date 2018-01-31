@@ -17,10 +17,16 @@ import com.team1389.hardware.value_types.Position;
 import com.team1389.hardware.value_types.Speed;
 import com.team1389.hardware.value_types.Value;
 import com.team1389.operation.TeleopMain;
+import com.team1389.trajectory.PathFollowingSystem;
+import com.team1389.trajectory.PathFollowingSystem.Constants;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import jaci.pathfinder.Pathfinder;
+import jaci.pathfinder.Trajectory;
+import jaci.pathfinder.Waypoint;
+import jaci.pathfinder.modifiers.TankModifier;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -56,10 +62,29 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousInit()
 	{
+		Pathfinder path = new Pathfinder();
+		Constants constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration, RobotConstants.MaxVelocity, 1,
+				0, 0, robot.pos.get(), 2);
+		
+		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
+				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
+		Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1, Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
+				new Waypoint(0, 0, 0) };
 
-		autoModeExecuter.stop();
+		Trajectory trajectory = Pathfinder.generate(points, config);
+
+		// Wheelbase Width = 0.762m
+		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
+		path.generate(points, config);
+		
+		
+		// Do something with the new Trajectories...
+		//Trajectory left = modifier.getLeftTrajectory();
+		//Trajectory right = modifier.getRightTrajectory();
+
+		/*autoModeExecuter.stop();
 		AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
-		autoModeExecuter.setAutoMode(selectedAutonMode);
+		autoModeExecuter.setAutoMode(selectedAutonMode);*/
 
 	}
 
