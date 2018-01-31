@@ -2,6 +2,9 @@ package com.team1389.robot;
 
 import com.team1389.hardware.registry.port_types.CAN;
 import com.team1389.hardware.registry.port_types.PWM;
+import com.team1389.hardware.registry.port_types.SPIPort;
+
+import edu.wpi.first.wpilibj.SPI;
 
 /**
  * The RobotMap is a mapping from the ports sensors and actuators are wired into
@@ -39,6 +42,9 @@ public class RobotMap
 	protected final CAN can_RIGHT_DRIVE_T = new CAN(0);
 	protected final boolean inv_RIGHT_DRIVE_T = false;
 	protected final boolean sinv_RIGHT_DRIVE_T = false;
+	
+	//gyro
+	protected final SPIPort spi_GyroPort = new SPIPort(SPI.Port.kOnboardCS0);
 	
 	
 	

@@ -17,5 +17,7 @@ public class RobotConstants {
 	public static final double MaxVelocity = 22; // m/s
 	public static final double MaxAcceleration = 22; // m/s^2
 	public static final double MaxDeceleration = 22; // m/s^2
+	public static final double MaxJerk = 22; // no idea
+	
 
 }

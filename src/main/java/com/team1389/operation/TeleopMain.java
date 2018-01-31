@@ -25,7 +25,7 @@ public class TeleopMain
 		Subsystem driveSystem = setUpDriveSystem();
 		manager = new SystemManager(driveSystem);
 		manager.init();
-		watcher.watch(driveSystem);
+		//watcher.watch(driveSystem);
 
 	}
 

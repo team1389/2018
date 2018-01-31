@@ -1,12 +1,13 @@
 package com.team1389.robot;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.team1389.hardware.inputs.hardware.GyroHardware;
-import com.team1389.hardware.inputs.hardware.PDPHardware;
-import com.team1389.hardware.inputs.hardware.SwitchHardware;
+import com.team1389.hardware.inputs.hardware.SpartanGyro;
 import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.outputs.hardware.VictorHardware;
 import com.team1389.hardware.registry.Registry;
+import com.team1389.hardware.registry.port_types.SPIPort;
+
+import edu.wpi.first.wpilibj.SPI.Port;
 
 /**
  * responsible for initializing and storing hardware objects defined in
@@ -28,6 +29,7 @@ public class RobotHardware extends RobotLayout
 	{
 		registry = new Registry();
 		System.out.println("initializing hardware");
+		gyro = new SpartanGyro(spi_GyroPort, registry);
 		initDriveTrain();
 	}
 
@@ -40,6 +42,7 @@ public class RobotHardware extends RobotLayout
 		rightDriveT = new CANTalonHardware(inv_RIGHT_DRIVE_T, sinv_RIGHT_DRIVE_T, FeedbackDevice.QuadEncoder, 1024,
 				can_RIGHT_DRIVE_T, registry, t -> t.setSelectedSensorPosition(0, 0, 10));
 	}
+	
 
 	public Registry getRegistry()
 	{
