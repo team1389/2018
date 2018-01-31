@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
+import jaci.pathfinder.followers.EncoderFollower;
 import jaci.pathfinder.modifiers.TankModifier;
 
 /**
@@ -63,9 +64,9 @@ public class Robot extends IterativeRobot
 	public void autonomousInit()
 	{
 		Pathfinder path = new Pathfinder();
-		Constants constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration, RobotConstants.MaxVelocity, 1,
-				0, 0, robot.pos.get(), 2);
-		
+		Constants constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration,
+				RobotConstants.MaxVelocity, 1, 0, 0, robot.pos.get(), 2);
+
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
 				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
 		Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1, Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
@@ -75,16 +76,27 @@ public class Robot extends IterativeRobot
 
 		// Wheelbase Width = 0.762m
 		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
-		path.generate(points, config);
 		
+		EncoderFollower left = new EncoderFollower(modifier.getLeftTrajectory());
+		EncoderFollower right = new EncoderFollower(modifier.getRightTrajectory());
 		
-		// Do something with the new Trajectories...
-		//Trajectory left = modifier.getLeftTrajectory();
-		//Trajectory right = modifier.getRightTrajectory();
+		left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 4096, 5);
+		right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 4096, 5);
+		
+		left.configurePIDVA(1.0, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
+		right.configurePIDVA(1.0, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
 
-		/*autoModeExecuter.stop();
-		AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
-		autoModeExecuter.setAutoMode(selectedAutonMode);*/
+		// path.generate(points, config);
+
+		// Do something with the new Trajectories...
+		// Trajectory left = modifier.getLeftTrajectory();
+		// Trajectory right = modifier.getRightTrajectory();
+
+		/*
+		 * autoModeExecuter.stop(); AutoModeBase selectedAutonMode =
+		 * DashboardInput.getInstance().getSelectedAutonMode();
+		 * autoModeExecuter.setAutoMode(selectedAutonMode);
+		 */
 
 	}
 
