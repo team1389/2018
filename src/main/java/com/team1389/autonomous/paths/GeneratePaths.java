@@ -12,7 +12,7 @@ public class GeneratePaths
 	PathFollowingSystem path;
 	Constants constants;
 
-	public void init(RobotSoftware robo)
+	public GeneratePaths(RobotSoftware robo)
 	{
 		constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration, RobotConstants.MaxVelocity, 1,
 				0, 0, robo.pos.get(), 2);
@@ -26,6 +26,13 @@ public class GeneratePaths
 		Translation2d desiredPos = new Translation2d(0, 5);
 		Waypoint p1 = new Waypoint(desiredPos, 5);
 		points[0] = p1;
+		//Trajectory traj;
+	}
+	
+	public void driveStraight()
+	{
+		generateDriveStraight();
+	
 	}
 
 }
