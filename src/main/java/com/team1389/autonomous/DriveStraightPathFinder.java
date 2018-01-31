@@ -33,6 +33,7 @@ public class DriveStraightPathFinder extends AutoModeBase
 	protected void routine() throws AutoModeEndedException
 	{
 		GeneratePaths path = new GeneratePaths(robot);
+		path.driveStraight();
 	}
 	
 }

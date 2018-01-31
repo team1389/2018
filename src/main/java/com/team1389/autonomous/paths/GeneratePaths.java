@@ -2,10 +2,14 @@ package com.team1389.autonomous.paths;
 
 import com.team1389.robot.RobotConstants;
 import com.team1389.robot.RobotSoftware;
-import com.team1389.trajectory.Path.Waypoint;
 import com.team1389.trajectory.PathFollowingSystem;
 import com.team1389.trajectory.PathFollowingSystem.Constants;
 import com.team1389.trajectory.Translation2d;
+
+import jaci.pathfinder.Pathfinder;
+import jaci.pathfinder.Trajectory;
+import jaci.pathfinder.Waypoint;
+import jaci.pathfinder.modifiers.TankModifier;
 
 public class GeneratePaths
 {
@@ -22,17 +26,26 @@ public class GeneratePaths
 
 	public void generateDriveStraight()
 	{
-		Waypoint[] points = new Waypoint[1];
-		Translation2d desiredPos = new Translation2d(0, 5);
-		Waypoint p1 = new Waypoint(desiredPos, 5);
-		points[0] = p1;
-		//Trajectory traj;
+		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
+				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
+		Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1, Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
+				new Waypoint(0, 0, 0) };
+
+		Trajectory trajectory = Pathfinder.generate(points, config);
+
+		// Wheelbase Width = 0.762m
+		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
+
+		// Do something with the new Trajectories...
+		//Trajectory left = modifier.getLeftTrajectory();
+		//Trajectory right = modifier.getRightTrajectory();
+		path.followPath(trajectory, false);
 	}
-	
+
 	public void driveStraight()
 	{
 		generateDriveStraight();
-	
+
 	}
 
 }
