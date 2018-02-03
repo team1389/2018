@@ -1,24 +1,9 @@
 
 package com.team1389.robot;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.team1389.auto.AutoModeBase;
 import com.team1389.auto.AutoModeExecuter;
-import com.team1389.hardware.inputs.hardware.SwitchHardware;
-import com.team1389.hardware.inputs.software.PercentIn;
-import com.team1389.hardware.inputs.software.RangeIn;
-import com.team1389.hardware.outputs.hardware.CANTalonHardware;
-import com.team1389.hardware.outputs.hardware.VictorHardware;
-import com.team1389.hardware.outputs.software.RangeOut;
 import com.team1389.hardware.registry.Registry;
-import com.team1389.hardware.registry.port_types.CAN;
-import com.team1389.hardware.registry.port_types.PWM;
-import com.team1389.hardware.value_types.Position;
-import com.team1389.hardware.value_types.Speed;
-import com.team1389.hardware.value_types.Value;
 import com.team1389.operation.TeleopMain;
-import com.team1389.trajectory.PathFollowingSystem;
-import com.team1389.trajectory.PathFollowingSystem.Constants;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -26,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
-import jaci.pathfinder.followers.EncoderFollower;
+import jaci.pathfinder.followers.DistanceFollower;
 import jaci.pathfinder.modifiers.TankModifier;
 
 /**
@@ -41,9 +26,15 @@ public class Robot extends IterativeRobot
 	RobotSoftware robot;
 	TeleopMain teleOperator;
 	AutoModeExecuter autoModeExecuter;
-	CANTalonHardware masterTalon;
-	CANTalonHardware followerTalon;
 	Registry registry;
+
+	//EncoderFollower left;
+	//EncoderFollower right;
+	
+	DistanceFollower left;
+	DistanceFollower right;
+	
+	
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -63,28 +54,32 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousInit()
 	{
-		Pathfinder path = new Pathfinder();
-		Constants constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration,
-				RobotConstants.MaxVelocity, 1, 0, 0, robot.pos.get(), 2);
-
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
 				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
-		Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1, Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
-				new Waypoint(0, 0, 0) };
+		Waypoint[] points = new Waypoint[] { new Waypoint(1, 5, 0), new Waypoint(2, 6, 0) };
 
 		Trajectory trajectory = Pathfinder.generate(points, config);
 
 		// Wheelbase Width = 0.762m
 		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
 		
-		EncoderFollower left = new EncoderFollower(modifier.getLeftTrajectory());
-		EncoderFollower right = new EncoderFollower(modifier.getRightTrajectory());
-		
-		left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 4096, 5);
-		right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 4096, 5);
-		
-		left.configurePIDVA(1.0, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
-		right.configurePIDVA(1.0, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
+		left = new DistanceFollower(trajectory);
+		right = new DistanceFollower(trajectory);
+		//left = new EncoderFollower(modifier.getLeftTrajectory());
+		//right = new EncoderFollower(modifier.getRightTrajectory());
+
+		//left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 1024, 5);
+		//right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 1024, 5);
+		// between .6 and 1
+		left.configurePIDVA(1, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
+		right.configurePIDVA(1, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
+
+		left.setTrajectory(trajectory);
+		right.setTrajectory(trajectory);
+		// Pathfinder path = new Pathfinder();
+		// Constants constants = new Constants(RobotConstants.MaxJerk,
+		// RobotConstants.MaxAcceleration,
+		// RobotConstants.MaxVelocity, 1, 0, 0, robot.pos.get(), 2);
 
 		// path.generate(points, config);
 
@@ -97,7 +92,6 @@ public class Robot extends IterativeRobot
 		 * DashboardInput.getInstance().getSelectedAutonMode();
 		 * autoModeExecuter.setAutoMode(selectedAutonMode);
 		 */
-
 	}
 
 	@Override
@@ -114,8 +108,36 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
+		SmartDashboard.putNumber("Right Talon", robot.rightDriveT.getSensorPositionStream().get());
+		SmartDashboard.putNumber("Left Talon", robot.leftDriveT.getSensorPositionStream().get());
 
 		teleOperator.periodic();
+	}
+
+	@Override
+	public void autonomousPeriodic()
+	{
+		double l = left.calculate((int) robot.leftDriveT.getSensorPositionStream().get());
+		double r = right.calculate((int) robot.rightDriveT.getSensorPositionStream().get());
+
+		double gyro_heading = robot.pos.get(); // Assuming the gyro is giving a
+												// value in degrees
+		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
+																	// also be
+																	// in
+																	// degrees
+
+		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyro_heading);
+		double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
+
+		robot.leftDriveT.getVoltageController()
+				.set(left.calculate((int) robot.leftDriveT.getSensorPositionStream().get()));
+		robot.rightDriveT.getVoltageController()
+				.set(right.calculate((int) robot.rightDriveT.getSensorPositionStream().get()));
+		System.out.println("Left is finished? " + left.isFinished());
+		System.out.println("Right is finished? " + right.isFinished());
+		System.out.println("Left motor voltage " + (left.calculate((int) robot.leftDriveT.getSensorPositionStream().get())));
+		System.out.println("Right motor voltage " + (right.calculate((int) robot.rightDriveT.getSensorPositionStream().get())));
 	}
 
 	@Override
