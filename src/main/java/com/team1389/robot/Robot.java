@@ -60,7 +60,7 @@ public class Robot extends IterativeRobot
 
 		TankModifier modifier = new TankModifier(trajectory).modify(0.67945);
 
-	;
+		;
 		left = new EncoderFollower(modifier.getLeftTrajectory());
 		right = new EncoderFollower(modifier.getRightTrajectory());
 
@@ -71,7 +71,7 @@ public class Robot extends IterativeRobot
 
 		left.setTrajectory(trajectory);
 		right.setTrajectory(trajectory);
-		
+
 	}
 
 	@Override
@@ -97,24 +97,25 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousPeriodic()
 	{
-		double l = left.calculate((int) robot.leftDriveT.getSensorPositionStream().get());
-		double r = right.calculate((int) robot.rightDriveT.getSensorPositionStream().get());
-
-		double gyro_heading = robot.pos.get(); // Assuming the gyro is giving a
-												// value in degrees
-		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
-																	// also be
-																	// in
-																	// degrees
-
-		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyro_heading);
-		double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
+		/*
+		 * double l = left.calculate((int)
+		 * robot.leftDriveT.getSensorPositionStream().get()); double r =
+		 * right.calculate((int)
+		 * robot.rightDriveT.getSensorPositionStream().get());
+		 * 
+		 * double gyro_heading = robot.pos.get(); // Assuming the gyro is giving
+		 * a // value in degrees double desired_heading =
+		 * Pathfinder.r2d(left.getHeading()); // Should // also be // in //
+		 * degrees
+		 * 
+		 * double angleDifference = Pathfinder.boundHalfDegrees(desired_heading
+		 * - gyro_heading); double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
+		 */
 
 		robot.leftDriveT.getVoltageController()
 				.set(left.calculate((int) robot.leftDriveT.getSensorPositionStream().get()));
 		robot.rightDriveT.getVoltageController()
 				.set(right.calculate((int) robot.rightDriveT.getSensorPositionStream().get()));
-
 
 		for (int i = 0; i < trajectory.length(); i++)
 		{
