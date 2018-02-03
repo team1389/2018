@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
-import jaci.pathfinder.followers.DistanceFollower;
 import jaci.pathfinder.followers.EncoderFollower;
 import jaci.pathfinder.modifiers.TankModifier;
 
@@ -29,13 +28,10 @@ public class Robot extends IterativeRobot
 	AutoModeExecuter autoModeExecuter;
 	Registry registry;
 
-	//EncoderFollower left;
-	//EncoderFollower right;
-	
 	EncoderFollower left;
 	EncoderFollower right;
-	
-	
+
+	Trajectory trajectory;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -57,42 +53,25 @@ public class Robot extends IterativeRobot
 	{
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
 				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
-		Waypoint[] points = new Waypoint[] { new Waypoint(1, 5, 0), new Waypoint(2, 6, 0) };
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, 1, 0), new Waypoint(0, 2, 0), new Waypoint(0, 0, 0) };
 
-		Trajectory trajectory = Pathfinder.generate(points, config);
+		trajectory = Pathfinder.generate(points, config);
+		System.out.println("Trajectory length: " + trajectory.length());
 
-		// Wheelbase Width = 0.762m
-		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
-		
-		left = new EncoderFollower(trajectory);
-		right = new EncoderFollower(trajectory);
-		//left = new EncoderFollower(modifier.getLeftTrajectory());
-		//right = new EncoderFollower(modifier.getRightTrajectory());
+		TankModifier modifier = new TankModifier(trajectory).modify(0.67945);
 
-		//left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 1024, 5);
-		//right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 1024, 5);
-		// between .6 and 1
-		left.configurePIDVA(1, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
-		right.configurePIDVA(1, 0.0, 0.0, 1 / RobotConstants.MaxVelocity, 0);
+	;
+		left = new EncoderFollower(modifier.getLeftTrajectory());
+		right = new EncoderFollower(modifier.getRightTrajectory());
+
+		left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 1024, 5);
+		right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 1024, 5);
+		left.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
+		right.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
 
 		left.setTrajectory(trajectory);
 		right.setTrajectory(trajectory);
-		// Pathfinder path = new Pathfinder();
-		// Constants constants = new Constants(RobotConstants.MaxJerk,
-		// RobotConstants.MaxAcceleration,
-		// RobotConstants.MaxVelocity, 1, 0, 0, robot.pos.get(), 2);
-
-		// path.generate(points, config);
-
-		// Do something with the new Trajectories...
-		// Trajectory left = modifier.getLeftTrajectory();
-		// Trajectory right = modifier.getRightTrajectory();
-
-		/*
-		 * autoModeExecuter.stop(); AutoModeBase selectedAutonMode =
-		 * DashboardInput.getInstance().getSelectedAutonMode();
-		 * autoModeExecuter.setAutoMode(selectedAutonMode);
-		 */
+		
 	}
 
 	@Override
@@ -135,10 +114,16 @@ public class Robot extends IterativeRobot
 				.set(left.calculate((int) robot.leftDriveT.getSensorPositionStream().get()));
 		robot.rightDriveT.getVoltageController()
 				.set(right.calculate((int) robot.rightDriveT.getSensorPositionStream().get()));
-		System.out.println("Left is finished? " + left.isFinished());
-		System.out.println("Right is finished? " + right.isFinished());
-		System.out.println("Left motor voltage " + (left.calculate((int) robot.leftDriveT.getSensorPositionStream().get())));
-		System.out.println("Right motor voltage " + (right.calculate((int) robot.rightDriveT.getSensorPositionStream().get())));
+
+
+		for (int i = 0; i < trajectory.length(); i++)
+		{
+			Trajectory.Segment seg = trajectory.get(i);
+
+			System.out.printf("%f,%f,%f,%f,%f,%f,%f,%f\n", seg.dt, seg.x, seg.y, seg.position, seg.velocity,
+					seg.acceleration, seg.jerk, seg.heading);
+		}
+
 	}
 
 	@Override
