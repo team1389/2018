@@ -53,7 +53,7 @@ public class Robot extends IterativeRobot
 	{
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
 				Trajectory.Config.SAMPLES_HIGH, 0.05, 1.7, 2.0, 60.0);
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, 1, 0), new Waypoint(0, 2, 0), new Waypoint(0, 0, 0) };
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, 1, 0), new Waypoint(1, 0, 0), new Waypoint(2, 0, 0) };
 
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
@@ -117,13 +117,13 @@ public class Robot extends IterativeRobot
 		robot.rightDriveT.getVoltageController()
 				.set(right.calculate((int) robot.rightDriveT.getSensorPositionStream().get()));
 
-		for (int i = 0; i < trajectory.length(); i++)
+		/*for (int i = 0; i < trajectory.length(); i++)
 		{
 			Trajectory.Segment seg = trajectory.get(i);
 
 			System.out.printf("%f,%f,%f,%f,%f,%f,%f,%f\n", seg.dt, seg.x, seg.y, seg.position, seg.velocity,
 					seg.acceleration, seg.jerk, seg.heading);
-		}
+		}*/
 
 	}
 
