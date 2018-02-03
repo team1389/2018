@@ -12,6 +12,7 @@ import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
 import jaci.pathfinder.followers.DistanceFollower;
+import jaci.pathfinder.followers.EncoderFollower;
 import jaci.pathfinder.modifiers.TankModifier;
 
 /**
@@ -31,8 +32,8 @@ public class Robot extends IterativeRobot
 	//EncoderFollower left;
 	//EncoderFollower right;
 	
-	DistanceFollower left;
-	DistanceFollower right;
+	EncoderFollower left;
+	EncoderFollower right;
 	
 	
 
@@ -63,8 +64,8 @@ public class Robot extends IterativeRobot
 		// Wheelbase Width = 0.762m
 		TankModifier modifier = new TankModifier(trajectory).modify(0.762);
 		
-		left = new DistanceFollower(trajectory);
-		right = new DistanceFollower(trajectory);
+		left = new EncoderFollower(trajectory);
+		right = new EncoderFollower(trajectory);
 		//left = new EncoderFollower(modifier.getLeftTrajectory());
 		//right = new EncoderFollower(modifier.getRightTrajectory());
 
