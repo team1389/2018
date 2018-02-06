@@ -5,6 +5,7 @@ import com.team1389.robot.RobotSoftware;
 import com.team1389.system.Subsystem;
 import com.team1389.system.SystemManager;
 import com.team1389.system.drive.CurvatureDriveSystem;
+import com.team1389.system.drive.DriveOut;
 import com.team1389.watch.Watcher;
 
 public class TeleopMain
@@ -32,7 +33,7 @@ public class TeleopMain
 
 	public Subsystem setUpDriveSystem()
 	{
-		return new CurvatureDriveSystem(robot.drive, controls.xDriveY(), controls.xDriveX(), controls.rightBumper());
+		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(), controls.rightBumper());
 	}
 
 	public void periodic()

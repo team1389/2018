@@ -4,7 +4,6 @@ import com.team1389.robot.RobotConstants;
 import com.team1389.robot.RobotSoftware;
 import com.team1389.trajectory.PathFollowingSystem;
 import com.team1389.trajectory.PathFollowingSystem.Constants;
-import com.team1389.trajectory.Translation2d;
 
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
@@ -20,7 +19,7 @@ public class GeneratePaths
 	{
 		constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration, RobotConstants.MaxVelocity, 1,
 				0, 0, robo.pos.get(), 2);
-		path = new PathFollowingSystem(robo.drive, robo.leftDriveT.getSensorPositionStream(),
+		path = new PathFollowingSystem(robo.drive.getAsTank(), robo.leftDriveT.getSensorPositionStream(),
 				robo.rightDriveT.getSensorPositionStream(), robo.pos, constants);
 	}
 

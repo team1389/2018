@@ -14,10 +14,10 @@ public class RobotConstants {
 	/**
 	 * constants for motion profiling
 	 */
-	public static final double MaxVelocity = 22; // should be 22ish m/s
-	public static final double MaxAcceleration = 22; // m/s^2
-	public static final double MaxDeceleration = 22; // m/s^2
-	public static final double MaxJerk = 22; // no idea
+	public static final double MaxVelocity = 6.7; // should be 22ish m/s
+	public static final double MaxAcceleration = 6.7; // m/s^2
+	public static final double MaxDeceleration = 6.7; // m/s^2
+	public static final double MaxJerk = 30.48; // no idea
 	
 
 }

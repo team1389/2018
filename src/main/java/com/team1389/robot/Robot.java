@@ -2,8 +2,9 @@
 package com.team1389.robot;
 
 import com.team1389.auto.AutoModeExecuter;
-import com.team1389.auto.command.WaitTimeCommand;
+import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
+import com.team1389.hardware.value_types.Position;
 import com.team1389.operation.TeleopMain;
 import com.team1389.watchers.DashboardInput;
 
@@ -28,7 +29,7 @@ public class Robot extends IterativeRobot
 	TeleopMain teleOperator;
 	AutoModeExecuter autoModeExecuter;
 	Registry registry;
-
+	RangeIn<Position> lPos, rPos;
 	EncoderFollower left;
 	EncoderFollower right;
 
@@ -46,12 +47,16 @@ public class Robot extends IterativeRobot
 		teleOperator = new TeleopMain(robot);
 		autoModeExecuter = new AutoModeExecuter();
 		DashboardInput.getInstance().init();
+		lPos = robot.leftPos.offset(-robot.leftPos.get());
+		rPos = robot.rightPos.offset(-robot.rightPos.get());
 
 	}
 
 	@Override
 	public void autonomousInit()
 	{
+		lPos = robot.leftPos.offset(-robot.leftPos.get());
+		rPos = robot.rightPos.offset(-robot.rightPos.get());
 		/**
 		 * Pathfinder uses the following convention: X+ -> Robot forward (across
 		 * the field from your alliance to the other) Y+ -> Left hand side of X+
@@ -70,8 +75,8 @@ public class Robot extends IterativeRobot
 		left = new EncoderFollower(modifier.getLeftTrajectory());
 		right = new EncoderFollower(modifier.getRightTrajectory());
 
-		left.configureEncoder((int) robot.leftDriveT.getSensorPositionStream().get(), 1024, .127);
-		right.configureEncoder((int) robot.rightDriveT.getSensorPositionStream().get(), 1024, .127);
+		left.configureEncoder((int) lPos.get(), 1024, .127);
+		right.configureEncoder((int) rPos.get(), 1024, .127);
 		left.configurePIDVA(.33, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
 		right.configurePIDVA(.33, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
 		left.setTrajectory(modifier.getLeftTrajectory());
@@ -102,7 +107,7 @@ public class Robot extends IterativeRobot
 	public void teleopPeriodic()
 	{
 
-		SmartDashboard.putNumber("Gyro pos", robot.pos.get());
+		// SmartDashboard.putNumber("Gyro pos", robot.pos.get());
 
 		teleOperator.periodic();
 	}
@@ -125,12 +130,12 @@ public class Robot extends IterativeRobot
 		 * - gyro_heading); double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
 		 */
 
-		robot.leftDriveT.getVoltageController().scale(.495)
-				.set(left.calculate((int) robot.leftDriveT.getSensorPositionStream().get()));// scaled4pracbot
-		robot.rightDriveT.getVoltageController().scale(.5)
-				.set(right.calculate((int) robot.rightDriveT.getSensorPositionStream().get()));
-		SmartDashboard.putNumber("Right Talon", robot.rightDriveT.getSensorPositionStream().get());
-		SmartDashboard.putNumber("Left Talon", robot.leftDriveT.getSensorPositionStream().get());
+		robot.leftDriveT.getVoltageController().set(left.calculate((int) lPos.get()));// scaled4pracbot
+		robot.rightDriveT.getVoltageController().set(right.calculate((int) rPos.get()));
+		SmartDashboard.putNumber("Right Talon", rPos.get());
+		SmartDashboard.putNumber("Left Talon", lPos.get());
+		System.out.println("Are we therrre yettt? " + left.isFinished());
+		System.out.println("are we there yet right ed. " + right.isFinished());
 
 	}
 
@@ -143,7 +148,7 @@ public class Robot extends IterativeRobot
 	public void disabledPeriodic()
 	{
 		// TODO Auto-generated method stub
-		SmartDashboard.putNumber("Right Talon", robot.rightDriveT.getSensorPositionStream().get());
-		SmartDashboard.putNumber("Left Talon", robot.leftDriveT.getSensorPositionStream().get());
+		SmartDashboard.putNumber("Right Talon", rPos.get());
+		SmartDashboard.putNumber("Left Talon", lPos.get());
 	}
 }
