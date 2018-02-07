@@ -15,12 +15,14 @@ import com.team1389.robot.RobotConstants;
 import com.team1389.system.Subsystem;
 import com.team1389.util.list.AddList;
 import com.team1389.watch.Watchable;
+import com.team1389.watch.info.BooleanInfo;
 
 /**
  * note that one must zero elevator before going to any pos (since we scale
  * encoder val by 3 for up, it gets super inaccurate on the way down, as i'm not
- * sure about how cascading elevators work on the way down 
- * Think we have to use commands if we want to zero before going to a pos
+ * sure about how cascading elevators work on the way down Think we have to use
+ * commands if we want to zero before going to a pos TODO: clarify on cascading
+ * elevators, try to cut down on positions to 4
  * 
  * @author Quunii
  *
@@ -51,13 +53,15 @@ public class Elevator extends Subsystem {
 
 	@Override
 	public AddList<Watchable> getSubWatchables(AddList<Watchable> arg0) {
-		return arg0;
+		return arg0.put(zero.getWatchable("elev zero"), elevPos.getWatchable("elev pos"),
+				elevVel.getWatchable("elev vel"),
+				new BooleanInfo("profile finished", () -> profileController.isFinished()));
 	}
 
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return "Elevator";
 	}
 
 	@Override
@@ -102,12 +106,13 @@ public class Elevator extends Subsystem {
 		goToZero();
 		scheduler.schedule(goTo(State.SWITCH_LOW));
 		if (front) {
-			//  put arm at -90 (front)
+			// put arm at -90 (front)
 		} else {
 			// put arm at 90 (back)
 		}
 	}
-	//run armcommand simultaneously with elev command
+
+	// run armcommand simultaneously with elev command
 	public void goToSwitchHigh(boolean front) {
 		goToZero();
 		scheduler.schedule(goTo(State.SWITCH_HIGH));
@@ -119,9 +124,10 @@ public class Elevator extends Subsystem {
 	}
 
 	/**
-	 * note: would always have to use SCALE_LOW for elevDuration 
-	 * could totally use the arm enum for front and back instead of boolean
-	 *  have to figure out how to select front or back on armCommand
+	 * note: would always have to use SCALE_LOW for elevDuration could totally use
+	 * the arm enum for front and back instead of boolean have to figure out how to
+	 * select front or back on armCommand
+	 * 
 	 * @param front
 	 *            set true if arm should be in front, false if not
 	 */
@@ -134,10 +140,12 @@ public class Elevator extends Subsystem {
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; //= ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand(): armToZeroCommand()
-		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH), armCommand));	
+		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
+							// armToZeroCommand()
+		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH), armCommand));
 
 	}
+
 	public void goToScaleLow(boolean front) {
 		goToZero();
 		// idea is that we do armDuration - elevDuration, if its < 1 we wait for
@@ -147,18 +155,18 @@ public class Elevator extends Subsystem {
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; //= ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand(): armToZeroCommand()
-		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW), armCommand));	
+		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
+							// armToZeroCommand()
+		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW), armCommand));
 
 	}
+
 	/**
 	 * check if we have max hall effect, if so we dont have to zero beforehand
 	 */
-	public void goToMax()
-	{
+	public void goToMax() {
 		scheduler.schedule(goTo(State.MAX));
 	}
-	
 
 	public enum State {
 		ZERO(0), SWITCH_LOW(0), SWITCH_HIGH(0), SCALE_LOW(0), SCALE_HIGH(0), MAX(0);
@@ -172,10 +180,10 @@ public class Elevator extends Subsystem {
 	private void setState(State toSet) {
 		currentState = toSet;
 	}
-	private MotionProfile calculateProfile(State desired)
-	{
-		return ProfileUtil.trapezoidal(desired.pos, elevVel.get(),
-				RobotConstants.ElevMaxAcceleration, RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity);
+
+	private MotionProfile calculateProfile(State desired) {
+		return ProfileUtil.trapezoidal(desired.pos, elevVel.get(), RobotConstants.ElevMaxAcceleration,
+				RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity);
 	}
 
 }
