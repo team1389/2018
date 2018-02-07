@@ -17,7 +17,7 @@ import com.team1389.watch.Watchable;
 public class Arm extends Subsystem
 {
 	RangeIn<Position> armPos;
-	RangeOut<Percent> intakeVolt;
+	protected RangeOut<Percent> intakeVolt;
 	RangeOut<Percent> armVolt;
 	DigitalIn beambreak;
 	DigitalIn zero;
@@ -26,8 +26,8 @@ public class Arm extends Subsystem
 	IntakeState intakeState;
 	MotionProfileController profileController;
 
-	public Arm(RangeIn<Position> armPos, RangeOut<Percent> intakeVolt, RangeOut<Percent> armVolt, DigitalIn beambreak,
-			DigitalIn zero, RangeIn<Speed> armVel)
+	public Arm(RangeIn<Position> armPos, RangeOut<Percent> intakeVolt, RangeOut<Percent> armVolt, RangeIn<Speed> armVel,
+			DigitalIn beambreak, DigitalIn zero)
 	{
 		this.armPos = armPos;
 		this.intakeVolt = intakeVolt;
@@ -51,7 +51,7 @@ public class Arm extends Subsystem
 	public enum IntakeState
 	{
 		INTAKING(1), NEUTRAL(0), OUTTAKING(-1);
-		private final double voltage;
+		protected final double voltage;
 
 		private IntakeState(double voltage)
 		{
@@ -92,19 +92,27 @@ public class Arm extends Subsystem
 		intakeVolt.set(intakeState.voltage);
 	}
 
+	public IntakeState getIntakeState()
+	{
+		return intakeState;
+	}
+	public PositionState getPositionState()
+	{
+		return posState;
+	}
 	public void goToFront()
 	{
 		goTo(PositionState.FRONT);
 	}
 
-	public void goToVert()
-	{
-		goTo(PositionState.VERTICAL);
-	}
-
 	public void goToRear()
 	{
 		goTo(PositionState.REAR);
+	}
+
+	public void goToVertical()
+	{
+		goTo(PositionState.VERTICAL);
 	}
 
 	private void goTo(PositionState desired)
@@ -126,7 +134,7 @@ public class Arm extends Subsystem
 				RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity);
 	}
 
-	private void setIntakeState(IntakeState desired)
+	public void setIntakeState(IntakeState desired)
 	{
 		intakeState = desired;
 	}
