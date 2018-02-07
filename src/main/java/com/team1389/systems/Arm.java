@@ -1,85 +1,134 @@
 package com.team1389.systems;
 
-import com.team1389.configuration.PIDConstants;
-import com.team1389.control.SynchronousPIDController;
+import com.team1389.control.MotionProfileController;
 import com.team1389.hardware.inputs.software.DigitalIn;
 import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.outputs.software.RangeOut;
+import com.team1389.hardware.value_types.Percent;
 import com.team1389.hardware.value_types.Position;
 import com.team1389.hardware.value_types.Speed;
+import com.team1389.motion_profile.MotionProfile;
+import com.team1389.motion_profile.ProfileUtil;
+import com.team1389.robot.RobotConstants;
 import com.team1389.system.Subsystem;
 import com.team1389.util.list.AddList;
 import com.team1389.watch.Watchable;
 
 public class Arm extends Subsystem
 {
-	RangeIn<Position> position;
-	RangeOut intakeVoltage;
-	RangeOut armVoltage;
-	SynchronousPIDController pid;
+	RangeIn<Position> armPos;
+	RangeOut<Percent> intakeVolt;
+	RangeOut<Percent> armVolt;
+	DigitalIn beambreak;
 	DigitalIn zero;
-	DigitalIn ninty;
-	DigitalIn oneEighty;
-	State currentState;
+	RangeIn<Speed> armVel;
+	PositionState posState;
+	IntakeState intakeState;
+	MotionProfileController profileController;
 
-	public Arm(RangeIn<Position> position, RangeOut intakeVoltage, RangeOut armVoltage, DigitalIn zero, DigitalIn ninty,
-			DigitalIn oneEighty)
+	public Arm(RangeIn<Position> armPos, RangeOut<Percent> intakeVolt, RangeOut<Percent> armVolt, DigitalIn beambreak,
+			DigitalIn zero, RangeIn<Speed> armVel)
 	{
-		super();
-		this.position = position;
-		this.intakeVoltage = intakeVoltage;
-		this.armVoltage = armVoltage;
+		this.armPos = armPos;
+		this.intakeVolt = intakeVolt;
+		this.armVolt = armVolt;
+		this.beambreak = beambreak;
 		this.zero = zero;
-		this.ninty = ninty;
-		this.oneEighty = oneEighty;
+		this.armVel = armVel;
+	}
+
+	public enum PositionState
+	{
+		FRONT(0), VERTICAL(90), REAR(180);
+		private final double angle;
+
+		private PositionState(double angle)
+		{
+			this.angle = angle;
+		}
+	}
+
+	public enum IntakeState
+	{
+		INTAKING(1), NEUTRAL(0), OUTTAKING(-1);
+		private final double voltage;
+
+		private IntakeState(double voltage)
+		{
+			this.voltage = voltage;
+		}
 	}
 
 	@Override
-	public AddList<Watchable> getSubWatchables(AddList<Watchable> arg0)
+	public AddList<Watchable> getSubWatchables(AddList<Watchable> stem)
 	{
-		return null;
+		return stem;
 	}
 
 	@Override
 	public String getName()
 	{
-		return null;
+		return "Arm System";
 	}
 
 	@Override
 	public void init()
 	{
-		pid = new SynchronousPIDController<>(new PIDConstants(0.1, 0, 0), position, armVoltage);
-		position.setRange(0, 360);
-		zero();
-		setState(State.Down);
+		posState = PositionState.FRONT;
+		intakeState = IntakeState.NEUTRAL;
+		profileController = new MotionProfileController(0.1, 0, 0, 0, armPos, armVel, armVolt);
 
 	}
 
 	@Override
 	public void update()
 	{
-
-	}
-
-	public void zero()
-	{
-		while (!zero.get())
+		if (zero.get())
 		{
-			armVoltage.set(-.25);
+			armPos.offset(-armPos.get());
 		}
-		armVoltage.set(0);
-		position.offset(-position.get());
+		profileController.update();
+
+		intakeVolt.set(intakeState.voltage);
 	}
 
-	enum State
+	public void goToFront()
 	{
-		IntakingZero, IntakingOneEighty, Lifting, Down
+		goTo(PositionState.FRONT);
 	}
 
-	private void setState(State desired)
+	public void goToVert()
 	{
-		currentState = desired;
+		goTo(PositionState.VERTICAL);
+	}
+
+	public void goToRear()
+	{
+		goTo(PositionState.REAR);
+	}
+
+	private void goTo(PositionState desired)
+	{
+		setPositionState(desired);
+		MotionProfile profile = calculateProfile(desired);
+		profileController.followProfile(profile);
+
+	}
+
+	private void setPositionState(PositionState desired)
+	{
+		posState = desired;
+	}
+
+	private MotionProfile calculateProfile(PositionState desired)
+	{
+		return ProfileUtil.trapezoidal(desired.angle, armVel.get(), RobotConstants.ElevMaxAcceleration,
+				RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity);
+	}
+
+	private void setIntakeState(IntakeState desired)
+	{
+		intakeState = desired;
 	}
 
 }

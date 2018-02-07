@@ -48,7 +48,6 @@ public class Elevator extends Subsystem
 		this.elevPos = elevPos;
 		this.elevVolt = elevVolt;
 		this.elevVel = elevVel;
-		profileController = new MotionProfileController(0.1, 0, 0, 0, elevPos, elevVel, elevVolt);
 	}
 
 	@Override
@@ -69,6 +68,8 @@ public class Elevator extends Subsystem
 	public void init()
 	{
 		currentState = State.ZERO;
+		profileController = new MotionProfileController(0.1, 0, 0, 0, elevPos, elevVel, elevVolt);
+
 
 	}
 
@@ -79,7 +80,7 @@ public class Elevator extends Subsystem
 		{
 			elevPos.offset(-elevPos.get());
 		}
-		scheduler.update();
+	profileController.update();
 	}
 	// public static MotionProfile trapezoidal(double dx, double Vo, double
 	// maxAccel, double maxDecel, double maxSpeed) {
@@ -186,6 +187,11 @@ public class Elevator extends Subsystem
 	private void setState(State toSet)
 	{
 		currentState = toSet;
+	}
+	
+	public State getState()
+	{
+		return currentState;
 	}
 
 	private MotionProfile calculateProfile(State desired)

@@ -9,7 +9,9 @@ import com.team1389.hardware.value_types.Speed;
 import com.team1389.hardware.value_types.Value;
 
 /**
- * do we need to call scheduler.update()?
+ * Teleop Elevator System, implements buttons for manipulator control
+ * 
+ * @author Raffi
  *
  */
 public class TeleopElevator extends Elevator
@@ -45,12 +47,12 @@ public class TeleopElevator extends Elevator
 			updateManual();
 		} else
 		{
-			updateDefault();
+			updateAdvanced();
 		}
 
 	}
 
-	private void updateDefault()
+	private void updateAdvanced()
 	{
 		if (zeroBtn.get())
 		{
