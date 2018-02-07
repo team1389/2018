@@ -142,7 +142,7 @@ public class Elevator extends Subsystem {
 		double bufferTime = armDuration - elevDuration;
 		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
 							// armToZeroCommand()
-		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH), armCommand));
+		//scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH), armCommand));
 
 	}
 
@@ -157,7 +157,7 @@ public class Elevator extends Subsystem {
 		double bufferTime = armDuration - elevDuration;
 		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
 							// armToZeroCommand()
-		scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW), armCommand));
+		//scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW), armCommand));
 
 	}
 
