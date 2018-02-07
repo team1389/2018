@@ -34,14 +34,6 @@ public class Elevator extends Subsystem
 	State currentState;
 	MotionProfileController profileController;
 
-	/**
-	 * 
-	 * @param zero
-	 * @param elevPos
-	 *            must be mapped using circ on pulley, scaled by 2 to represent
-	 *            cascading
-	 * @param elevVolt
-	 */
 	public Elevator(DigitalIn zero, RangeIn<Position> elevPos, RangeIn<Speed> elevVel, RangeOut<Percent> elevVolt)
 	{
 		this.zero = zero;
@@ -70,7 +62,6 @@ public class Elevator extends Subsystem
 		currentState = State.ZERO;
 		profileController = new MotionProfileController(0.1, 0, 0, 0, elevPos, elevVel, elevVolt);
 
-
 	}
 
 	@Override
@@ -80,7 +71,7 @@ public class Elevator extends Subsystem
 		{
 			elevPos.offset(-elevPos.get());
 		}
-	profileController.update();
+		profileController.update();
 	}
 	// public static MotionProfile trapezoidal(double dx, double Vo, double
 	// maxAccel, double maxDecel, double maxSpeed) {
@@ -109,8 +100,7 @@ public class Elevator extends Subsystem
 	 * @param front
 	 *            set true if arm should be in front, false if not
 	 */
-	public void goToSwitch
-	(boolean front)
+	public void goToSwitch(boolean front)
 	{
 		goTo(State.SWITCH);
 		if (front)
@@ -121,7 +111,6 @@ public class Elevator extends Subsystem
 			// put arm at 90 (back)
 		}
 	}
-
 
 	/**
 	 * note: would always have to use SCALE_LOW for elevDuration could totally
@@ -169,7 +158,7 @@ public class Elevator extends Subsystem
 	}
 
 	/**
-	 * check if we have max hall effect, if so we dont have to zero beforehand 
+	 * check if we have max hall effect, if so we dont have to zero beforehand
 	 * these are in meters
 	 */
 
@@ -188,7 +177,7 @@ public class Elevator extends Subsystem
 	{
 		currentState = toSet;
 	}
-	
+
 	public State getState()
 	{
 		return currentState;
