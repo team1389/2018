@@ -10,72 +10,68 @@ import com.team1389.hardware.value_types.Value;
 
 /**
  * do we need to call scheduler.update()?
- * @author Quunii
  *
  */
-public class TeleopElevator extends Elevator {
+public class TeleopElevator extends Elevator
+{
 
-	//can have max bound to start, decided that low and high switch can just be high switch
-	DigitalIn zeroBtn, switchBtn, scaleLowBtn, scaleHighBtn, maxBtn;
+	// can have max bound to start, decided that low and high switch can just be
+	// high switch
+	DigitalIn zeroBtn, switchBtn, scaleLowBtn, scaleMiddleBtn, scaleHighBtn;
 	DigitalIn manualBtn;
 	RangeIn<Value> ctrlAxis;
 	boolean manual;
-	
+
 	public TeleopElevator(DigitalIn zero, RangeIn<Position> elevPos, RangeIn<Speed> elevVel, RangeOut<Percent> elevVolt,
-			DigitalIn zeroBtn, DigitalIn switchBtn, DigitalIn scaleLowBtn, DigitalIn scaleHighBtn, DigitalIn maxBtn,DigitalIn manualBtn,
-			RangeIn<Value> ctrlAxis) {
+			DigitalIn zeroBtn, DigitalIn switchBtn, DigitalIn scaleLowBtn, DigitalIn scaleMiddleBtn,
+			DigitalIn scaleHighBtn, DigitalIn manualBtn, RangeIn<Value> ctrlAxis)
+	{
 		super(zero, elevPos, elevVel, elevVolt);
 		this.zeroBtn = zeroBtn;
 		this.switchBtn = switchBtn;
 		this.scaleLowBtn = scaleLowBtn;
+		this.scaleMiddleBtn = scaleMiddleBtn;
 		this.scaleHighBtn = scaleHighBtn;
-		this.maxBtn = maxBtn;
-		this.ctrlAxis = ctrlAxis;
 		this.manualBtn = manualBtn;
+		this.ctrlAxis = ctrlAxis;
 	}
-	
 
 	@Override
-	public void update() {
-		manual = manual^manualBtn.get();
-		if(manual)
+	public void update()
+	{
+		manual = manual ^ manualBtn.get();
+		if (manual)
 		{
 			updateManual();
-		}
-		else
+		} else
 		{
 			updateDefault();
 		}
-		
+
 	}
+
 	private void updateDefault()
 	{
-		if(zeroBtn.get())
+		if (zeroBtn.get())
 		{
 			goToZero();
-		}
-		else if(switchBtn.get())
+		} else if (switchBtn.get())
 		{
-			goToSwitchHigh(true);
-		}
-		else if(scaleLowBtn.get())
+			goToSwitch(true);
+		} else if (scaleLowBtn.get())
 		{
 			goToScaleLow(true);
-		}
-		else if(scaleHighBtn.get())
+		} else if (scaleHighBtn.get())
 		{
 			goToScaleHigh(true);
 		}
-		else if(maxBtn.get())
-		{
-			goToMax();
-		}
+
 		super.update();
 	}
+
 	private void updateManual()
 	{
 		elevVolt.set(ctrlAxis.get());
 	}
 
-	
 }

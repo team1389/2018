@@ -1,6 +1,5 @@
 package com.team1389.systems;
 
-import com.team1389.command_framework.CommandUtil;
 import com.team1389.command_framework.command_base.Command;
 import com.team1389.control.MotionProfileController;
 import com.team1389.hardware.inputs.software.DigitalIn;
@@ -24,10 +23,10 @@ import com.team1389.watch.info.BooleanInfo;
  * commands if we want to zero before going to a pos TODO: clarify on cascading
  * elevators, try to cut down on positions to 4
  * 
- * @author Quunii
  *
  */
-public class Elevator extends Subsystem {
+public class Elevator extends Subsystem
+{
 	DigitalIn zero;
 	RangeIn<Position> elevPos;
 	RangeIn<Speed> elevVel;
@@ -39,11 +38,12 @@ public class Elevator extends Subsystem {
 	 * 
 	 * @param zero
 	 * @param elevPos
-	 *            must be mapped using circ on pulley, scaled by 3 to represent
+	 *            must be mapped using circ on pulley, scaled by 2 to represent
 	 *            cascading
 	 * @param elevVolt
 	 */
-	public Elevator(DigitalIn zero, RangeIn<Position> elevPos, RangeIn<Speed> elevVel, RangeOut<Percent> elevVolt) {
+	public Elevator(DigitalIn zero, RangeIn<Position> elevPos, RangeIn<Speed> elevVel, RangeOut<Percent> elevVolt)
+	{
 		this.zero = zero;
 		this.elevPos = elevPos;
 		this.elevVolt = elevVolt;
@@ -52,27 +52,31 @@ public class Elevator extends Subsystem {
 	}
 
 	@Override
-	public AddList<Watchable> getSubWatchables(AddList<Watchable> arg0) {
-		return arg0.put(zero.getWatchable("elev zero"), elevPos.getWatchable("elev pos"),
+	public AddList<Watchable> getSubWatchables(AddList<Watchable> stem)
+	{
+		return stem.put(zero.getWatchable("elev zero"), elevPos.getWatchable("elev pos"),
 				elevVel.getWatchable("elev vel"),
 				new BooleanInfo("profile finished", () -> profileController.isFinished()));
 	}
 
 	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
+	public String getName()
+	{
 		return "Elevator";
 	}
 
 	@Override
-	public void init() {
+	public void init()
+	{
 		currentState = State.ZERO;
 
 	}
 
 	@Override
-	public void update() {
-		if (zero.get()) {
+	public void update()
+	{
+		if (zero.get())
+		{
 			elevPos.offset(-elevPos.get());
 		}
 		scheduler.update();
@@ -85,15 +89,17 @@ public class Elevator extends Subsystem {
 	 * @param desired
 	 * @return motion profile that is being followed
 	 */
-	public Command goTo(State desired) {
+	public void goTo(State desired)
+	{
 		setState(desired);
 		MotionProfile profile = calculateProfile(desired);
-		return profileController.followProfileCommand(profile);
+		profileController.followProfile(profile);
 
 	}
 
-	public void goToZero() {
-		scheduler.schedule(goTo(State.ZERO));
+	public void goToZero()
+	{
+		goTo(State.ZERO);
 		// (simultaneously) put arm at zero as well or keep it in current state
 	}
 
@@ -102,86 +108,88 @@ public class Elevator extends Subsystem {
 	 * @param front
 	 *            set true if arm should be in front, false if not
 	 */
-	public void goToSwitchLow(boolean front) {
-		goToZero();
-		scheduler.schedule(goTo(State.SWITCH_LOW));
-		if (front) {
+	public void goToSwitch
+	(boolean front)
+	{
+		goTo(State.SWITCH);
+		if (front)
+		{
 			// put arm at -90 (front)
-		} else {
+		} else
+		{
 			// put arm at 90 (back)
 		}
 	}
 
-	// run armcommand simultaneously with elev command
-	public void goToSwitchHigh(boolean front) {
-		goToZero();
-		scheduler.schedule(goTo(State.SWITCH_HIGH));
-		if (front) {
-			// put arm at -90 (front)
-		} else {
-			// put arm at 90 (back)
-		}
-	}
 
 	/**
-	 * note: would always have to use SCALE_LOW for elevDuration could totally use
-	 * the arm enum for front and back instead of boolean have to figure out how to
-	 * select front or back on armCommand
+	 * note: would always have to use SCALE_LOW for elevDuration could totally
+	 * use the arm enum for front and back instead of boolean have to figure out
+	 * how to select front or back on armCommand
 	 * 
 	 * @param front
 	 *            set true if arm should be in front, false if not
 	 */
-	public void goToScaleHigh(boolean front) {
-		goToZero();
+	public void goToScaleHigh(boolean front)
+	{
 		// idea is that we do armDuration - elevDuration, if its < 1 we wait for
-		// (armDuration-elevDuration), which should allow the arm mp to finish before we
+		// (armDuration-elevDuration), which should allow the arm mp to finish
+		// before we
 		// hit scale
 		double elevDuration = calculateProfile(State.SCALE_LOW).getDuration();
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
+		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) +
+							// armToZeroCommand():
 							// armToZeroCommand()
-		//scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH), armCommand));
+		// scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH),
+		// armCommand));
 
 	}
 
-	public void goToScaleLow(boolean front) {
+	public void goToScaleLow(boolean front)
+	{
 		goToZero();
 		// idea is that we do armDuration - elevDuration, if its < 1 we wait for
-		// (armDuration-elevDuration), which should allow the arm mp to finish before we
+		// (armDuration-elevDuration), which should allow the arm mp to finish
+		// before we
 		// hit scale
 		double elevDuration = calculateProfile(State.SCALE_LOW).getDuration();
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) + armToZeroCommand():
+		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) +
+							// armToZeroCommand():
 							// armToZeroCommand()
-		//scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW), armCommand));
+		// scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW),
+		// armCommand));
 
 	}
 
 	/**
-	 * check if we have max hall effect, if so we dont have to zero beforehand
+	 * check if we have max hall effect, if so we dont have to zero beforehand 
+	 * these are in meters
 	 */
-	public void goToMax() {
-		scheduler.schedule(goTo(State.MAX));
-	}
 
-	public enum State {
-		ZERO(0), SWITCH_LOW(0), SWITCH_HIGH(0), SCALE_LOW(0), SCALE_HIGH(0), MAX(0);
+	public enum State
+	{
+		ZERO(0), SWITCH(0.5), SCALE_LOW(1.24), SCALE_MIDDLE(1.544), SCALE_HIGH(1.849);
 		private final double pos;
 
-		private State(double pos) {
+		private State(double pos)
+		{
 			this.pos = pos;
 		}
 	}
 
-	private void setState(State toSet) {
+	private void setState(State toSet)
+	{
 		currentState = toSet;
 	}
 
-	private MotionProfile calculateProfile(State desired) {
+	private MotionProfile calculateProfile(State desired)
+	{
 		return ProfileUtil.trapezoidal(desired.pos, elevVel.get(), RobotConstants.ElevMaxAcceleration,
 				RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity);
 	}
