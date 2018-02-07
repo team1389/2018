@@ -6,6 +6,7 @@ import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.hardware.value_types.Position;
 import com.team1389.operation.TeleopMain;
+import com.team1389.system.drive.FourWheelSignal;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -106,9 +107,15 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
-
+		SmartDashboard.putNumber("average linear dist", (lPos.get() + rPos.get())/2);
 		// SmartDashboard.putNumber("Gyro pos", robot.pos.get());
-
+		robot.leftDriveV.getVoltageOutput().set(1);
+		//robot.left.set(1);
+		//robot.left
+		//robot.rightDriveV.getVoltageOutput().set(-1);
+		//robot.drive.set(new FourWheelSignal(1, 1 , 1, 1));
+		//robot.right.set(1);
+		robot.left.set(1);
 		teleOperator.periodic();
 	}
 
