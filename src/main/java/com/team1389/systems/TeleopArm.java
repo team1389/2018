@@ -63,10 +63,15 @@ public class TeleopArm extends Arm
 		setIntakeState(((intakeBtn.get()) ? IntakeState.INTAKING
 				: ((outtakeBtn.get()) ? IntakeState.OUTTAKING : IntakeState.NEUTRAL)));
 		intakeVolt.set(getIntakeState().voltage);
+		super.update();
 	}
 
 	public void updateManual()
 	{
+		if (zero.get())
+		{
+			armPos.offset(-armPos.get());
+		}
 		armVolt.set(ctrlAxis.get());
 		setIntakeState(((intakeBtn.get()) ? IntakeState.INTAKING
 				: ((outtakeBtn.get()) ? IntakeState.OUTTAKING : IntakeState.NEUTRAL)));
