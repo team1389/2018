@@ -16,7 +16,7 @@ public class GeneratePaths
 	{
 		constants = new Constants(RobotConstants.MaxJerk, RobotConstants.MaxAcceleration, RobotConstants.MaxVelocity, 1,
 				0, 0, robo.pos.get(), 2);
-		path = new PathFollowingSystem(robo.drive, robo.leftDriveT.getSensorPositionStream(),
+		path = new PathFollowingSystem(robo.drive.getAsTank(), robo.leftDriveT.getSensorPositionStream(),
 				robo.rightDriveT.getSensorPositionStream(), robo.pos, constants);
 	}
 

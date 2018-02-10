@@ -1,12 +1,11 @@
 package com.team1389.operation;
 
 import com.team1389.hardware.controls.ControlBoard;
-import com.team1389.hardware.inputs.software.DigitalIn;
 import com.team1389.robot.RobotSoftware;
 import com.team1389.system.Subsystem;
 import com.team1389.system.SystemManager;
 import com.team1389.system.drive.CurvatureDriveSystem;
-import com.team1389.systems.VisionSystem;
+import com.team1389.systems.Vision;
 import com.team1389.watch.Watcher;
 
 public class TeleopMain
@@ -36,13 +35,14 @@ public class TeleopMain
 
 	private Subsystem setUpDriveSystem()
 	{
-		return new CurvatureDriveSystem(robot.drive, controls.xDriveY(), controls.xDriveX(), controls.rightBumper());
+		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(),
+				controls.rightBumper(), robot.pos, .03);
 
 	}
 
 	private Subsystem setUpVisionSystem()
 	{
-		return new VisionSystem(robot.drive);
+		return new Vision(robot.drive.getAsTank());
 	}
 
 	public void periodic()

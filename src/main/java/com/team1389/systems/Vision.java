@@ -17,7 +17,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  * @author Quunii
  *
  */
-public class VisionSystem extends Subsystem
+public class Vision extends Subsystem
 {
 	private static final String tableName = "Vision";
 	private static final String errorKey = "error";
@@ -25,7 +25,7 @@ public class VisionSystem extends Subsystem
 	double kP;
 	DriveOut<Percent> drive;
 
-	public VisionSystem(DriveOut<Percent> drive)
+	public Vision(DriveOut<Percent> drive)
 	{
 		this.drive = drive;
 	}

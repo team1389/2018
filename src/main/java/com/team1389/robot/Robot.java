@@ -1,26 +1,15 @@
 
 package com.team1389.robot;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.team1389.auto.AutoModeBase;
 import com.team1389.auto.AutoModeExecuter;
-import com.team1389.hardware.inputs.hardware.SwitchHardware;
-import com.team1389.hardware.inputs.software.PercentIn;
-import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.outputs.hardware.CANTalonHardware;
-import com.team1389.hardware.outputs.hardware.VictorHardware;
-import com.team1389.hardware.outputs.software.RangeOut;
 import com.team1389.hardware.registry.Registry;
-import com.team1389.hardware.registry.port_types.CAN;
-import com.team1389.hardware.registry.port_types.PWM;
-import com.team1389.hardware.value_types.Position;
-import com.team1389.hardware.value_types.Speed;
-import com.team1389.hardware.value_types.Value;
 import com.team1389.operation.TeleopMain;
+import com.team1389.system.drive.FourWheelSignal;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -84,7 +73,7 @@ public class Robot extends IterativeRobot
 	{
 		//robot.rightDriveT.getVoltageController().set(.25);
 		//robot.leftDriveT.getVoltageController().set(.25);
-
+		//robot.drive.set(new FourWheelSignal(.5,.5,.5,.5));
 		teleOperator.periodic();
 	}
 
