@@ -17,12 +17,12 @@ import com.team1389.watch.Watchable;
 import com.team1389.watch.info.BooleanInfo;
 
 /**
- * note that one must zero elevator before going to any pos (since we scale
- * encoder val by 3 for up, it gets super inaccurate on the way down, as i'm not
- * sure about how cascading elevators work on the way down Think we have to use
- * commands if we want to zero before going to a pos TODO: clarify on cascading
- * elevators, try to cut down on positions to 4
+ * Provides control of the elevator system. Controls both the first and second
+ * stage, the second stage travels simultaneously with the first, but at twice
+ * the speed This only provides the control stucture which can be utilized in
+ * teleop or auto, see {@link TeleopElevator} for controller use
  * 
+ * @author Raffi
  *
  */
 public class Elevator extends Subsystem
@@ -73,13 +73,12 @@ public class Elevator extends Subsystem
 		}
 		profileController.update();
 	}
-	// public static MotionProfile trapezoidal(double dx, double Vo, double
-	// maxAccel, double maxDecel, double maxSpeed) {
 
 	/**
 	 * 
 	 * @param desired
-	 * @return motion profile that is being followed
+	 *            the desired state which inlcudes a height
+	 * @return motion profile to follow to get to correct height
 	 */
 	public void goTo(State desired)
 	{
@@ -92,7 +91,6 @@ public class Elevator extends Subsystem
 	public void goToZero()
 	{
 		goTo(State.ZERO);
-		// (simultaneously) put arm at zero as well or keep it in current state
 	}
 
 	/**
@@ -115,45 +113,41 @@ public class Elevator extends Subsystem
 	/**
 	 * note: would always have to use SCALE_LOW for elevDuration could totally
 	 * use the arm enum for front and back instead of boolean have to figure out
-	 * how to select front or back on armCommand
+	 * how to select front or back on armCommand idea is that we do armDuration
+	 * - elevDuration, if its < 1 we wait for (armDuration-elevDuration), which
+	 * should allow the arm mp to finish before we hit scale
 	 * 
 	 * @param front
 	 *            set true if arm should be in front, false if not
 	 */
 	public void goToScaleHigh(boolean front)
 	{
-		// idea is that we do armDuration - elevDuration, if its < 1 we wait for
-		// (armDuration-elevDuration), which should allow the arm mp to finish
-		// before we
-		// hit scale
+
 		double elevDuration = calculateProfile(State.SCALE_LOW).getDuration();
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) +
-							// armToZeroCommand():
-							// armToZeroCommand()
-		// scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_HIGH),
-		// armCommand));
+		Command armCommand;
 
 	}
 
+	/**
+	 * idea is that we do armDuration - elevDuration, if its < 1 we wait for
+	 * (armDuration-elevDuration), which should allow the arm mp to finish
+	 * before we hit scale
+	 * 
+	 * @param front
+	 *            if the arm is facing the front of the robot or not
+	 */
 	public void goToScaleLow(boolean front)
 	{
 		goToZero();
-		// idea is that we do armDuration - elevDuration, if its < 1 we wait for
-		// (armDuration-elevDuration), which should allow the arm mp to finish
-		// before we
-		// hit scale
+
 		double elevDuration = calculateProfile(State.SCALE_LOW).getDuration();
 		// armDuration is expected duration of arm profile
 		double armDuration = 0;
 		double bufferTime = armDuration - elevDuration;
-		Command armCommand; // = ((bufferTime<1)? waitTimeCommand(bufferTime) +
-							// armToZeroCommand():
-							// armToZeroCommand()
-		// scheduler.schedule(CommandUtil.combineSimultaneous(goTo(State.SCALE_LOW),
-		// armCommand));
+		Command armCommand;
 
 	}
 

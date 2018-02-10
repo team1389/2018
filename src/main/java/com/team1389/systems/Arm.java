@@ -14,8 +14,18 @@ import com.team1389.system.Subsystem;
 import com.team1389.util.list.AddList;
 import com.team1389.watch.Watchable;
 
+/**
+ * Provides control for the Arm Subsystem. Only controls the arms orientation,
+ * the height of the arm is controlled by the {@link Elevator} system. This is
+ * all of the control, that can be utilized in teleop or auto. See
+ * {@link TeleopArm} for controller implementation
+ * 
+ * @author Raffi
+ *
+ */
 public class Arm extends Subsystem
 {
+
 	RangeIn<Position> armPos;
 	protected RangeOut<Percent> intakeVolt;
 	RangeOut<Percent> armVolt;
@@ -37,6 +47,12 @@ public class Arm extends Subsystem
 		this.armVel = armVel;
 	}
 
+	/**
+	 * The current state of the Arm's angle
+	 * 
+	 * @author Raffi
+	 *
+	 */
 	public enum PositionState
 	{
 		FRONT(0), VERTICAL(90), REAR(180);
@@ -48,6 +64,12 @@ public class Arm extends Subsystem
 		}
 	}
 
+	/**
+	 * The current state of the intake
+	 * 
+	 * @author Raffi
+	 *
+	 */
 	public enum IntakeState
 	{
 		INTAKING(1), NEUTRAL(0), OUTTAKING(-1);
@@ -80,6 +102,10 @@ public class Arm extends Subsystem
 
 	}
 
+	/**
+	 * The update called on ever tick (50 hz) Zero's upon the hall effect being
+	 * triggered Then it update the motionprofile and sets the intake
+	 */
 	@Override
 	public void update()
 	{
@@ -96,10 +122,12 @@ public class Arm extends Subsystem
 	{
 		return intakeState;
 	}
+
 	public PositionState getPositionState()
 	{
 		return posState;
 	}
+
 	public void goToFront()
 	{
 		goTo(PositionState.FRONT);
@@ -115,6 +143,12 @@ public class Arm extends Subsystem
 		goTo(PositionState.VERTICAL);
 	}
 
+	/**
+	 * Goes to the desired angle depending on the current state
+	 * 
+	 * @param desired
+	 *            the state you want to enter
+	 */
 	private void goTo(PositionState desired)
 	{
 		setPositionState(desired);
@@ -128,6 +162,13 @@ public class Arm extends Subsystem
 		posState = desired;
 	}
 
+	/**
+	 * Generates the motion profile to get to the angle of the desired state
+	 * 
+	 * @param desired
+	 *            the desired state to enter
+	 * @return the motion profile to get to the angle of the desired state
+	 */
 	private MotionProfile calculateProfile(PositionState desired)
 	{
 		return ProfileUtil.trapezoidal(desired.angle, armVel.get(), RobotConstants.ElevMaxAcceleration,

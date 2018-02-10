@@ -25,14 +25,17 @@ public class TeleopMain
 		Subsystem driveSystem = setUpDriveSystem();
 		manager = new SystemManager(driveSystem);
 		manager.init();
-		//watcher.watch(driveSystem);
+		// watcher.watch(driveSystem);
 
 	}
 
 	public Subsystem setUpDriveSystem()
 	{
-		return new CurvatureDriveSystem(robot.drive, controls.leftStickYAxis().invert(), controls.rightStickXAxis(),
-				controls.rightBumper());
+		// return new CurvatureDriveSystem(robot.drive,
+		// controls.leftStickYAxis(), controls.rightStickXAxis(),
+		// controls.rightBumper());
+		return new CurvatureDriveSystem(robot.drive, controls.driveYAxis(), controls.driveXAxis(),
+				controls.driveModeBtn());
 	}
 
 	public void periodic()

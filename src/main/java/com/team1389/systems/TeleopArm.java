@@ -8,6 +8,11 @@ import com.team1389.hardware.value_types.Position;
 import com.team1389.hardware.value_types.Speed;
 import com.team1389.hardware.value_types.Value;
 
+/**
+ * The 
+ * @author Raffi
+ *
+ */
 public class TeleopArm extends Arm
 {
 	RangeIn<Position> armPos;

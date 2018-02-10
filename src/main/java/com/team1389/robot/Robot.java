@@ -56,16 +56,21 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousInit()
 	{
+		robot.rightDriveT.getVoltageController().set(.25);
+		robot.leftDriveT.getVoltageController().set(.25);
 
-		autoModeExecuter.stop();
-		AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
-		autoModeExecuter.setAutoMode(selectedAutonMode);
+		//autoModeExecuter.stop();
+		//AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
+		//autoModeExecuter.setAutoMode(selectedAutonMode);
 
 	}
 
 	@Override
 	public void teleopInit()
 	{
+		robot.rightDriveT.getVoltageController().set(.25);
+		robot.leftDriveT.getVoltageController().set(.25);
+
 		autoModeExecuter.stop();
 
 		teleOperator.init();
@@ -77,8 +82,11 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
+		robot.rightDriveT.getVoltageController().set(.25);
+		robot.leftDriveT.getVoltageController().set(.25);
 
-		teleOperator.periodic();
+		
+		//teleOperator.periodic();
 	}
 
 	@Override

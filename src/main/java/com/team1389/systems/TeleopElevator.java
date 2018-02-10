@@ -38,6 +38,11 @@ public class TeleopElevator extends Elevator
 		this.ctrlAxis = ctrlAxis;
 	}
 
+	/**
+	 * If we're in a manual or the manual mode is being pressed, update manual
+	 * mode, else update advanced mode
+	 */
+
 	@Override
 	public void update()
 	{
@@ -52,6 +57,9 @@ public class TeleopElevator extends Elevator
 
 	}
 
+	/**
+	 * updates the mode that uses motion profiles to go to certain heights
+	 */
 	private void updateAdvanced()
 	{
 		if (zeroBtn.get())
@@ -71,6 +79,10 @@ public class TeleopElevator extends Elevator
 		super.update();
 	}
 
+	/**
+	 * controls the height of the elevator directly proportional to how much the
+	 * manipulator's stick is being pushed
+	 */
 	private void updateManual()
 	{
 		elevVolt.set(ctrlAxis.get());

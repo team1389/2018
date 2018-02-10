@@ -40,7 +40,7 @@ public class RobotMap
 	protected final boolean inv_RIGHT_DRIVE_V = false;
 	
 	protected final CAN can_RIGHT_DRIVE_T = new CAN(0);
-	protected final boolean inv_RIGHT_DRIVE_T = false;
+	protected final boolean inv_RIGHT_DRIVE_T = true;
 	protected final boolean sinv_RIGHT_DRIVE_T = false;
 	
 	//gyro
