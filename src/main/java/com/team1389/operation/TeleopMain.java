@@ -13,6 +13,7 @@ public class TeleopMain
 	ControlBoard controls;
 	RobotSoftware robot;
 	Watcher watcher;
+	boolean vision;
 
 	public TeleopMain(RobotSoftware robot)
 	{
@@ -25,7 +26,8 @@ public class TeleopMain
 		Subsystem driveSystem = setUpDriveSystem();
 		manager = new SystemManager(driveSystem);
 		manager.init();
-		 watcher.watch(driveSystem);
+		watcher.watch(driveSystem);
+		vision = false;
 
 	}
 
@@ -37,6 +39,9 @@ public class TeleopMain
 
 	public void periodic()
 	{
-		manager.update();
+		if (!vision)
+		{
+			manager.update();
+		}
 	}
 }
