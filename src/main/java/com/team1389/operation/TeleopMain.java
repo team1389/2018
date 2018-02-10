@@ -33,7 +33,8 @@ public class TeleopMain
 
 	public Subsystem setUpDriveSystem()
 	{
-		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(), controls.rightBumper());
+		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(),
+				controls.rightBumper(), robot.pos, .03);
 	}
 
 	public void periodic()
