@@ -59,9 +59,9 @@ public class Robot extends IterativeRobot
 		robot.rightDriveT.getVoltageController().set(.25);
 		robot.leftDriveT.getVoltageController().set(.25);
 
-		//autoModeExecuter.stop();
-		//AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
-		//autoModeExecuter.setAutoMode(selectedAutonMode);
+		autoModeExecuter.stop();
+		AutoModeBase selectedAutonMode = DashboardInput.getInstance().getSelectedAutonMode();
+		autoModeExecuter.setAutoMode(selectedAutonMode);
 
 	}
 
@@ -85,8 +85,7 @@ public class Robot extends IterativeRobot
 		robot.rightDriveT.getVoltageController().set(.25);
 		robot.leftDriveT.getVoltageController().set(.25);
 
-		
-		//teleOperator.periodic();
+		teleOperator.periodic();
 	}
 
 	@Override
