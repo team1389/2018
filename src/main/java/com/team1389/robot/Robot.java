@@ -91,7 +91,8 @@ public class Robot extends IterativeRobot
 				Trajectory.Config.SAMPLES_HIGH, 0.05, RobotConstants.MaxVelocity, RobotConstants.MaxAcceleration,
 				RobotConstants.MaxJerk);
 
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, 0, 0), new Waypoint(2, 0, 0), };
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, 0, 0), new Waypoint(5.486, 0, Pathfinder.d2r(90)),
+				new Waypoint(5.486, 4.877, 0) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -216,13 +217,29 @@ public class Robot extends IterativeRobot
 		 * double angleDifference = Pathfinder.boundHalfDegrees(desired_heading
 		 * - gyro_heading); double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
 		 */
-
-		robot.leftDriveT.getVoltageController().set(left.calculate((int) lPos.get()));// scaled4pracbot
-		robot.rightDriveT.getVoltageController().set(right.calculate((int) rPos.get()));
+		if (!left.isFinished())
+		{
+			robot.leftDriveT.getVoltageController().set(left.calculate((int) lPos.get()));// scaled4pracbot
+			robot.rightDriveT.getVoltageController().set(right.calculate((int) rPos.get()));
+		} else
+		{
+			robot.leftDriveT.getVoltageController().set(0);// scaled4pracbot
+			robot.rightDriveT.getVoltageController().set(0);
+		}
 		SmartDashboard.putNumber("Right Talon", rPos.get());
 		SmartDashboard.putNumber("Left Talon", lPos.get());
 		System.out.println("Are we therrre yettt? " + left.isFinished());
 		System.out.println("are we there yet right ed. " + right.isFinished());
+		speed = (robot.leftDriveT.getVelocityStream().get()) * 10
+				+ ((robot.rightDriveT.getVelocityStream().get()) * 10) / 2;
+		speed = speed / 1024;
+		speed = speed * .127 * Math.PI;
+		SmartDashboard.putNumber("Speed", speed);
+
+		SmartDashboard.putBoolean("Right Finished", right.isFinished());
+		SmartDashboard.putBoolean("Left Finished", left.isFinished());
+		SmartDashboard.putNumber("Right pos", rPos.get() / 1024 * Math.PI * .127);
+		SmartDashboard.putNumber("Left pos", lPos.get() / 1024 * Math.PI * .127);
 
 	}
 
