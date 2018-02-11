@@ -28,7 +28,7 @@ public class RobotSoftware extends RobotHardware
 
 	public RobotSoftware()
 	{
-		PositionEncoderIn.setGlobalWheelDiameter(RobotConstants.WheelDiameter);
+		//PositionEncoderIn.setGlobalWheelDiameter(RobotConstants.WheelDiameter);
 	}
 
 }

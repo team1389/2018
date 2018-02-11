@@ -6,10 +6,14 @@ import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.hardware.value_types.Position;
 import com.team1389.operation.TeleopMain;
-import com.team1389.system.drive.FourWheelSignal;
+import com.team1389.watch.LogFile;
+import com.team1389.watch.Watcher;
+import com.team1389.watch.LogFile.LogType;
+import com.team1389.watch.info.NumberInfo;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
@@ -33,8 +37,22 @@ public class Robot extends IterativeRobot
 	RangeIn<Position> lPos, rPos;
 	EncoderFollower left;
 	EncoderFollower right;
+	Watcher watcher;
 
 	Trajectory trajectory;
+
+	double maxSpeed;
+	double maxAccel;
+	double maxJerk;
+	boolean driving;
+	Timer timer;
+	boolean first = false;
+	double speed = 0;
+	double accel = 0;
+	double jerk = 0;
+	double prevTime = 0;
+	double prevSpeed = 0;
+	double prevAccel;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -50,6 +68,12 @@ public class Robot extends IterativeRobot
 		DashboardInput.getInstance().init();
 		lPos = robot.leftPos.offset(-robot.leftPos.get());
 		rPos = robot.rightPos.offset(-robot.rightPos.get());
+		timer = new Timer();
+
+		watcher = new Watcher();
+		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
+		// LogType.CSV);
+		// watcher.setLogLocation(log);
 
 	}
 
@@ -78,8 +102,8 @@ public class Robot extends IterativeRobot
 
 		left.configureEncoder((int) lPos.get(), 1024, .127);
 		right.configureEncoder((int) rPos.get(), 1024, .127);
-		left.configurePIDVA(.33, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
-		right.configurePIDVA(.33, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
+		left.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
+		right.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
 		left.setTrajectory(modifier.getLeftTrajectory());
 		right.setTrajectory(modifier.getRightTrajectory());
 
@@ -98,7 +122,20 @@ public class Robot extends IterativeRobot
 	{
 		autoModeExecuter.stop();
 
+		// timer.start();
+
+		/*
+		 * watcher.watch( new NumberInfo("Speed", () ->
+		 * (((robot.leftDriveT.getVelocityStream().get()) +
+		 * (robot.rightDriveT.getVelocityStream().get())) / 2)), new
+		 * NumberInfo("Time", () -> timer.get()));
+		 */
+
 		teleOperator.init();
+		maxAccel = 0;
+		maxJerk = 0;
+		maxSpeed = 0; // watcher.outputToLog();
+
 	}
 
 	/**
@@ -107,16 +144,59 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
-		SmartDashboard.putNumber("average linear dist", (lPos.get() + rPos.get())/2);
-		// SmartDashboard.putNumber("Gyro pos", robot.pos.get());
-		robot.leftDriveV.getVoltageOutput().set(1);
-		//robot.left.set(1);
-		//robot.left
-		//robot.rightDriveV.getVoltageOutput().set(-1);
-		//robot.drive.set(new FourWheelSignal(1, 1 , 1, 1));
-		//robot.right.set(1);
-		robot.left.set(1);
+		// SmartDashboard.putNumber("average linear dist", (lPos.get() +
+		// rPos.get()) / 2);
+		double timePer = timer.get() - prevTime;
+		prevTime = timer.get();
+		// everything in ticks per second
+		SmartDashboard.putNumber("time per", timePer);
+		SmartDashboard.putNumber("time", timer.get());
+		speed = (robot.leftDriveT.getVelocityStream().get()) * 10
+				+ ((robot.rightDriveT.getVelocityStream().get()) * 10) / 2;
+		speed = speed / 1024;
+		speed = speed * .127 * Math.PI;
+		SmartDashboard.putNumber("Speed", speed);
+
+		accel = (speed - prevSpeed) / timePer;
+
+		jerk = (accel - prevAccel) / timePer;
+
+		SmartDashboard.putNumber("Accel", accel);
+
+		SmartDashboard.putNumber("Jerk", jerk);
+
 		teleOperator.periodic();
+
+		if (robot.leftDriveT.getVelocityStream().get() > .5)
+		{
+			driving = true;
+			first = true;
+		}
+		if (driving && first)
+		{
+			timer.start();
+			first = false;
+		}
+		if (speed > maxSpeed)
+		{
+			maxSpeed = speed;
+		}
+		if (accel > maxAccel)
+		{
+			maxAccel = accel;
+		}
+		if (jerk > maxJerk)
+		{
+			maxJerk = jerk;
+		}
+		prevSpeed = speed;
+		prevAccel = accel;
+
+		System.out.println("Max accel" + maxAccel);
+		System.out.println("Max Speed" + maxSpeed);
+		System.out.println("Max Jerk" + maxJerk);
+
+		Watcher.update();
 	}
 
 	@Override
