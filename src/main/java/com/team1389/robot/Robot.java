@@ -91,8 +91,12 @@ public class Robot extends IterativeRobot
 				Trajectory.Config.SAMPLES_HIGH, 0.05, RobotConstants.MaxVelocity, RobotConstants.MaxAcceleration,
 				RobotConstants.MaxJerk);
 
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, 0, 0), new Waypoint(5.486, 0, Pathfinder.d2r(90)),
-				new Waypoint(5.486, 4.877, 0) };
+		Waypoint[] points = new Waypoint[] {
+			    new Waypoint(0,0, 0),      // Waypoint @ x=-4, y=-1, exit angle=-45 degrees
+			                          // Waypoint @ x=-2, y=-2, exit angle=0 radians
+				new Waypoint(1.5, 1.5, 0) // Waypoint @ x=0, y=0, exit angle=0
+										// radians
+		};
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -203,22 +207,11 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousPeriodic()
 	{
-		/*
-		 * double l = left.calculate((int)
-		 * robot.leftDriveT.getSensorPositionStream().get()); double r =
-		 * right.calculate((int)
-		 * robot.rightDriveT.getSensorPositionStream().get());
-		 * 
-		 * double gyro_heading = robot.pos.get(); // Assuming the gyro is giving
-		 * a // value in degrees double desired_heading =
-		 * Pathfinder.r2d(left.getHeading()); // Should // also be // in //
-		 * degrees
-		 * 
-		 * double angleDifference = Pathfinder.boundHalfDegrees(desired_heading
-		 * - gyro_heading); double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
-		 */
+		
+	
+	
 		if (!left.isFinished())
-		{
+		{//(-, +) I think gyro mounted backwards causes these to be reversed
 			robot.leftDriveT.getVoltageController().set(left.calculate((int) lPos.get()));// scaled4pracbot
 			robot.rightDriveT.getVoltageController().set(right.calculate((int) rPos.get()));
 		} else
@@ -228,6 +221,7 @@ public class Robot extends IterativeRobot
 		}
 		SmartDashboard.putNumber("Right Talon", rPos.get());
 		SmartDashboard.putNumber("Left Talon", lPos.get());
+		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
 		System.out.println("Are we therrre yettt? " + left.isFinished());
 		System.out.println("are we there yet right ed. " + right.isFinished());
 		speed = (robot.leftDriveT.getVelocityStream().get()) * 10
@@ -252,6 +246,8 @@ public class Robot extends IterativeRobot
 	public void disabledPeriodic()
 	{
 		// TODO Auto-generated method stub
+		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
+
 		SmartDashboard.putNumber("Right Talon", rPos.get());
 		SmartDashboard.putNumber("Left Talon", lPos.get());
 	}

@@ -17,7 +17,7 @@ public class RobotConstants
 	 */
 	public static final double MaxVelocity = 5.889; // m/s
 	public static final double MaxAcceleration = 1; // m/s^2
-	public static final double MaxDeceleration = 1; // m/s^2
-	public static final double MaxJerk = .5; // m/s^3
+	public static final double MaxDeceleration = .1; // m/s^2
+	public static final double MaxJerk = 600; // m/s^3
 
 }
