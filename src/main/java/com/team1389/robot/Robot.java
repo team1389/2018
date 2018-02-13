@@ -2,14 +2,12 @@
 package com.team1389.robot;
 
 import com.team1389.auto.AutoModeExecuter;
+import com.team1389.hardware.inputs.software.AngleIn;
 import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.hardware.value_types.Position;
 import com.team1389.operation.TeleopMain;
-import com.team1389.watch.LogFile;
 import com.team1389.watch.Watcher;
-import com.team1389.watch.LogFile.LogType;
-import com.team1389.watch.info.NumberInfo;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -54,6 +52,10 @@ public class Robot extends IterativeRobot
 	double prevSpeed = 0;
 	double prevAccel;
 
+	AngleIn gyro;
+
+	double gyroheading;
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -71,6 +73,10 @@ public class Robot extends IterativeRobot
 		timer = new Timer();
 
 		watcher = new Watcher();
+		first = false;
+
+		gyro = robot.pos;
+
 		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
 		// LogType.CSV);
 		// watcher.setLogLocation(log);
@@ -91,35 +97,25 @@ public class Robot extends IterativeRobot
 				Trajectory.Config.SAMPLES_HIGH, 0.05, RobotConstants.MaxVelocity, RobotConstants.MaxAcceleration,
 				RobotConstants.MaxJerk);
 
-		Waypoint[] points = new Waypoint[] {
-			    new Waypoint(0,0, 0),      // Waypoint @ x=-4, y=-1, exit angle=-45 degrees
-			                          // Waypoint @ x=-2, y=-2, exit angle=0 radians
-				new Waypoint(1.5, 1.5, 0) // Waypoint @ x=0, y=0, exit angle=0
-										// radians
-		};
+		// Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1,
+		// Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
+		// new Waypoint(0, 0, 0) };
+
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, 0, 0), new Waypoint(1, 0, Pathfinder.d2r(30)),
+				new Waypoint(2, 2, Pathfinder.d2r(30)) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
-		TankModifier modifier = new TankModifier(trajectory).modify(0.67945);
+		TankModifier modifier = new TankModifier(trajectory).modify(0.656); // 0.67945
 
 		left = new EncoderFollower(modifier.getLeftTrajectory());
 		right = new EncoderFollower(modifier.getRightTrajectory());
 
 		left.configureEncoder((int) lPos.get(), 1024, .127);
 		right.configureEncoder((int) rPos.get(), 1024, .127);
-		left.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
-		right.configurePIDVA(1, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
-		left.setTrajectory(modifier.getLeftTrajectory());
-		right.setTrajectory(modifier.getRightTrajectory());
+		left.configurePIDVA(.6, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
+		right.configurePIDVA(.6, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
 
-		for (int i = 0; i < trajectory.length(); i++)
-		{
-			Trajectory.Segment seg = trajectory.get(i);
-			SmartDashboard.putNumber("x init", seg.x);
-			SmartDashboard.putNumber("y init", seg.y);
-			SmartDashboard.putNumber("dt init", seg.dt);
-
-		}
 	}
 
 	@Override
@@ -175,7 +171,6 @@ public class Robot extends IterativeRobot
 		if (robot.leftDriveT.getVelocityStream().get() > .5)
 		{
 			driving = true;
-			first = true;
 		}
 		if (driving && first)
 		{
@@ -207,34 +202,25 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousPeriodic()
 	{
+
+		gyroheading = gyro.get();
+
+		double l = left.calculate((int) lPos.get());
+		double r = right.calculate((int) rPos.get());
+
+		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
+																	// also be
+																	// in
+																	// degrees
+
+		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroheading);
+		double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
+
+		robot.leftDriveT.getVoltageController().set(l + turn);
+		robot.rightDriveT.getVoltageController().set(r - turn);
 		
-	
-	
-		if (!left.isFinished())
-		{//(-, +) I think gyro mounted backwards causes these to be reversed
-			robot.leftDriveT.getVoltageController().set(left.calculate((int) lPos.get()));// scaled4pracbot
-			robot.rightDriveT.getVoltageController().set(right.calculate((int) rPos.get()));
-		} else
-		{
-			robot.leftDriveT.getVoltageController().set(0);// scaled4pracbot
-			robot.rightDriveT.getVoltageController().set(0);
-		}
-		SmartDashboard.putNumber("Right Talon", rPos.get());
-		SmartDashboard.putNumber("Left Talon", lPos.get());
-		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
-		System.out.println("Are we therrre yettt? " + left.isFinished());
-		System.out.println("are we there yet right ed. " + right.isFinished());
-		speed = (robot.leftDriveT.getVelocityStream().get()) * 10
-				+ ((robot.rightDriveT.getVelocityStream().get()) * 10) / 2;
-		speed = speed / 1024;
-		speed = speed * .127 * Math.PI;
-		SmartDashboard.putNumber("Speed", speed);
-
-		SmartDashboard.putBoolean("Right Finished", right.isFinished());
-		SmartDashboard.putBoolean("Left Finished", left.isFinished());
-		SmartDashboard.putNumber("Right pos", rPos.get() / 1024 * Math.PI * .127);
-		SmartDashboard.putNumber("Left pos", lPos.get() / 1024 * Math.PI * .127);
-
+		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
+		SmartDashboard.putNumber("Angle", robot.pos.get());
 	}
 
 	@Override
@@ -248,7 +234,10 @@ public class Robot extends IterativeRobot
 		// TODO Auto-generated method stub
 		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
 
-		SmartDashboard.putNumber("Right Talon", rPos.get());
-		SmartDashboard.putNumber("Left Talon", lPos.get());
+		SmartDashboard.putNumber("Right Talon", rPos.get() / 1024 * .127 * Math.PI);
+		SmartDashboard.putNumber("Left Talon", lPos.get() / 1024 * .127 * Math.PI);
+		
+		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
+		SmartDashboard.putNumber("Angle", robot.pos.get());
 	}
 }
