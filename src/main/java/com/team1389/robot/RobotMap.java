@@ -39,12 +39,13 @@ public class RobotMap
 	protected final PWM pwm_RIGHT_DRIVE_V = new PWM(0);
 	protected final boolean inv_RIGHT_DRIVE_V = true;
 	
-	protected final CAN can_RIGHT_DRIVE_T = new CAN(0);
+	protected final CAN can_RIGHT_DRIVE_T = new CAN(2);
 	protected final boolean inv_RIGHT_DRIVE_T = true;
 	protected final boolean sinv_RIGHT_DRIVE_T = false;
 	
 	//gyro
 	protected final SPIPort spi_GyroPort = new SPIPort(SPI.Port.kOnboardCS0);
+	
 	
 	
 	
