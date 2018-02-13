@@ -76,6 +76,7 @@ public class Robot extends IterativeRobot
 		first = false;
 
 		gyro = robot.pos;
+		System.out.println(robot.prefs.getDouble("killMe", 200));
 
 		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
 		// LogType.CSV);
@@ -94,15 +95,15 @@ public class Robot extends IterativeRobot
 		 * Angle -> Positive going from X+ to Y+.
 		 */
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
-				Trajectory.Config.SAMPLES_HIGH, 0.05, RobotConstants.MaxVelocity, RobotConstants.MaxAcceleration,
-				RobotConstants.MaxJerk);
+				Trajectory.Config.SAMPLES_HIGH, 0.05, robot.prefs.getDouble("MaxVel", 0.0),robot.prefs.getDouble("MaxAccel", 0.0) ,
+				robot.prefs.getDouble("MaxJerk", 0.0));
 
 		// Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1,
 		// Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
 		// new Waypoint(0, 0, 0) };
 
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, 0, 0), new Waypoint(1, 0, Pathfinder.d2r(30)),
-				new Waypoint(2, 2, Pathfinder.d2r(30)) };
+		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
+				new Waypoint(4.191, 6.477, -1.571)};
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -113,8 +114,8 @@ public class Robot extends IterativeRobot
 
 		left.configureEncoder((int) lPos.get(), 1024, .127);
 		right.configureEncoder((int) rPos.get(), 1024, .127);
-		left.configurePIDVA(.6, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
-		right.configurePIDVA(.6, 0.0, 0.0, (1 / RobotConstants.MaxVelocity), 0);
+		left.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0), robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)), robot.prefs.getDouble("PathF", 0.0));
+		right.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0), robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)), robot.prefs.getDouble("PathF", 0.0));
 
 	}
 
@@ -145,58 +146,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
-		// SmartDashboard.putNumber("average linear dist", (lPos.get() +
-		// rPos.get()) / 2);
-		double timePer = timer.get() - prevTime;
-		prevTime = timer.get();
-		// everything in ticks per second
-		SmartDashboard.putNumber("time per", timePer);
-		SmartDashboard.putNumber("time", timer.get());
-		speed = (robot.leftDriveT.getVelocityStream().get()) * 10
-				+ ((robot.rightDriveT.getVelocityStream().get()) * 10) / 2;
-		speed = speed / 1024;
-		speed = speed * .127 * Math.PI;
-		SmartDashboard.putNumber("Speed", speed);
-
-		accel = (speed - prevSpeed) / timePer;
-
-		jerk = (accel - prevAccel) / timePer;
-
-		SmartDashboard.putNumber("Accel", accel);
-
-		SmartDashboard.putNumber("Jerk", jerk);
-
-		teleOperator.periodic();
-
-		if (robot.leftDriveT.getVelocityStream().get() > .5)
-		{
-			driving = true;
-		}
-		if (driving && first)
-		{
-			timer.start();
-			first = false;
-		}
-		if (speed > maxSpeed)
-		{
-			maxSpeed = speed;
-		}
-		if (accel > maxAccel)
-		{
-			maxAccel = accel;
-		}
-		if (jerk > maxJerk)
-		{
-			maxJerk = jerk;
-		}
-		prevSpeed = speed;
-		prevAccel = accel;
-
-		System.out.println("Max accel" + maxAccel);
-		System.out.println("Max Speed" + maxSpeed);
-		System.out.println("Max Jerk" + maxJerk);
-
-		Watcher.update();
+		
 	}
 
 	@Override
@@ -207,7 +157,10 @@ public class Robot extends IterativeRobot
 
 		double l = left.calculate((int) lPos.get());
 		double r = right.calculate((int) rPos.get());
-
+		double distance_covered = ((double)(lPos.get() / 1024)
+                * .127 * Math.PI);
+		double error = left.getSegment().position - distance_covered;
+		SmartDashboard.putNumber("error", error);
 		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
 																	// also be
 																	// in
