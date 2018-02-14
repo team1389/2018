@@ -17,7 +17,7 @@ public class RobotSoftware extends RobotHardware
 	public final RangeOut<Percent> left = leftDriveT.getVoltageController();
 	public final FourDriveOut<Percent> drive = new FourDriveOut<Percent>(leftDriveT.getVoltageController(),
 			rightDriveT.getVoltageController(), leftDriveV.getVoltageOutput(), rightDriveV.getVoltageOutput());
-	public final AngleIn<Position> pos = gyro.getAngleInput();
+	public final AngleIn<Position> angle = gyro.getAngleInput();
 	public final RangeIn<Position> leftPos = leftDriveT.getSensorPositionStream();
 	public final RangeIn<Position> rightPos = rightDriveT.getSensorPositionStream();
 	public Preferences prefs;

@@ -51,6 +51,7 @@ public class Robot extends IterativeRobot
 	double prevTime = 0;
 	double prevSpeed = 0;
 	double prevAccel;
+	double error = 0;
 
 	AngleIn gyro;
 
@@ -75,8 +76,10 @@ public class Robot extends IterativeRobot
 		watcher = new Watcher();
 		first = false;
 
-		gyro = robot.pos;
+		gyro = robot.angle;
 		System.out.println(robot.prefs.getDouble("killMe", 200));
+		SmartDashboard.putNumber("error", error);
+
 
 		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
 		// LogType.CSV);
@@ -87,6 +90,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousInit()
 	{
+
 		lPos = robot.leftPos.offset(-robot.leftPos.get());
 		rPos = robot.rightPos.offset(-robot.rightPos.get());
 		/**
@@ -95,20 +99,20 @@ public class Robot extends IterativeRobot
 		 * Angle -> Positive going from X+ to Y+.
 		 */
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
-				Trajectory.Config.SAMPLES_HIGH, 0.05, robot.prefs.getDouble("MaxVel", 0.0),robot.prefs.getDouble("MaxAccel", 0.0) ,
-				robot.prefs.getDouble("MaxJerk", 0.0));
+				Trajectory.Config.SAMPLES_HIGH, 0.05, robot.prefs.getDouble("MaxVel", 0.0),
+				robot.prefs.getDouble("MaxAccel", 0.0), robot.prefs.getDouble("MaxJerk", 0.0));
 
 		// Waypoint[] points = new Waypoint[] { new Waypoint(-4, -1,
 		// Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
 		// new Waypoint(0, 0, 0) };
 
 		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-				new Waypoint(4.191, 6.477, -1.571)};
+				new Waypoint(4.191, 6.477, -1.571) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
 		TankModifier modifier = new TankModifier(trajectory).modify(0.656); // 0.67945
-		
+
 		left = new EncoderFollower(modifier.getLeftTrajectory());
 		right = new EncoderFollower(modifier.getRightTrajectory());
 		left.reset();
@@ -118,8 +122,12 @@ public class Robot extends IterativeRobot
 		gyro.offset(-gyro.get());
 		left.configureEncoder((int) lPos.get(), 1024, .127);
 		right.configureEncoder((int) rPos.get(), 1024, .127);
-		left.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0), robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)), robot.prefs.getDouble("PathF", 0.0));
-		right.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0), robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)), robot.prefs.getDouble("PathF", 0.0));
+		left.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0),
+				robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)),
+				robot.prefs.getDouble("PathF", 0.0));
+		right.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0),
+				robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)),
+				robot.prefs.getDouble("PathF", 0.0));
 
 	}
 
@@ -150,7 +158,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
-		
+
 	}
 
 	@Override
@@ -163,9 +171,8 @@ public class Robot extends IterativeRobot
 
 		double l = left.calculate((int) lPos.get());
 		double r = right.calculate((int) rPos.get());
-		double distance_covered = ((double)(lPos.get() / 1024)
-                * .127 * Math.PI);
-	
+		double distance_covered = ((double) (lPos.get() / 1024) * .127 * Math.PI);
+
 		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
 																	// also be
 																	// in
@@ -173,13 +180,21 @@ public class Robot extends IterativeRobot
 
 		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroheading);
 		double turn = robot.prefs.getDouble("GyroP", 0.0) * (-1.0 / 80.0) * angleDifference;
-		
+
 		robot.leftDriveT.getVoltageController().set(l + turn);
 		robot.rightDriveT.getVoltageController().set(r - turn);
-		
-		
+
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
-		SmartDashboard.putNumber("Angle", robot.pos.get());
+		SmartDashboard.putNumber("Angle"
+				+ "++"
+				+ "", robot.angle.get());
+		if (!left.isFinished())
+		{
+			distance_covered = ((double) (lPos.get()) / 1024) * .127 *Math.PI;
+			error = left.getSegment().position - distance_covered;
+			SmartDashboard.putNumber("error", error);
+
+		}
 	}
 
 	@Override
@@ -193,10 +208,9 @@ public class Robot extends IterativeRobot
 		// TODO Auto-generated method stub
 		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
 
-		SmartDashboard.putNumber("r pos", rPos.get() );
+		SmartDashboard.putNumber("r pos", rPos.get());
 		SmartDashboard.putNumber("l pos", lPos.get());
-		
+
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
-		SmartDashboard.putNumber("Angle", robot.pos.get());
 	}
 }

@@ -30,7 +30,7 @@ public class WheelBase extends Command
 		pidR = new SynchronousPIDController<>(new PIDConstants(0.1, 0, 0),
 				robot.rightDriveT.getSensorPositionStream().mapToRange(0, 1).mapToRange(0, (.127 * Math.PI)),
 				robot.rightDriveT.getVoltageController());
-		this.angle = robot.pos;
+		this.angle = robot.angle;
 		pidL.setSetpoint(-5);
 		pidR.setSetpoint(.5);
 	}

@@ -16,7 +16,7 @@ public class RobotConstants
 	 * constants for motion profiling
 	 */
 	public static final double MaxVelocity = 3; // m/s
-	public static final double MaxAcceleration = 1; // m/s^2
+	public static final double MaxAcceleration = .5; // m/s^2
 	public static final double MaxDeceleration = 4.5; // m/s^2
 	public static final double MaxJerk = 30; // m/s^3
 
