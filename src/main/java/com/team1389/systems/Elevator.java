@@ -1,9 +1,12 @@
 package com.team1389.systems;
 
 import com.team1389.command_framework.command_base.Command;
+import com.team1389.configuration.PIDConstants;
 import com.team1389.control.MotionProfileController;
+import com.team1389.control.SmoothSetController;
 import com.team1389.hardware.inputs.software.DigitalIn;
 import com.team1389.hardware.inputs.software.RangeIn;
+import com.team1389.hardware.outputs.software.PercentOut;
 import com.team1389.hardware.outputs.software.RangeOut;
 import com.team1389.hardware.value_types.Percent;
 import com.team1389.hardware.value_types.Position;
@@ -33,6 +36,8 @@ public class Elevator extends Subsystem
 	RangeOut<Percent> elevVolt;
 	State currentState;
 	MotionProfileController profileController;
+	SmoothSetController controller;
+	PIDConstants pid;
 
 	public Elevator(DigitalIn zero, RangeIn<Position> elevPos, RangeIn<Speed> elevVel, RangeOut<Percent> elevVolt)
 	{
@@ -60,7 +65,12 @@ public class Elevator extends Subsystem
 	public void init()
 	{
 		currentState = State.ZERO;
+		pid = new PIDConstants(0.1, 0, 0, 0);
 		profileController = new MotionProfileController(0.1, 0, 0, 0, elevPos, elevVel, elevVolt);
+		controller = new SmoothSetController(pid, RobotConstants.ElevMaxAcceleration,
+				RobotConstants.ElevMaxDeceleration, RobotConstants.ElevMaxVelocity, elevPos, elevVel,
+				(PercentOut) elevVolt);
+		controller.enable();
 
 	}
 
@@ -74,23 +84,9 @@ public class Elevator extends Subsystem
 		profileController.update();
 	}
 
-	/**
-	 * 
-	 * @param desired
-	 *            the desired state which inlcudes a height
-	 * @return motion profile to follow to get to correct height
-	 */
-	public void goTo(State desired)
-	{
-		setState(desired);
-		MotionProfile profile = calculateProfile(desired);
-		profileController.followProfile(profile);
-
-	}
-
 	public void goToZero()
 	{
-		goTo(State.ZERO);
+		controller.setSetpoint(State.ZERO.pos);
 	}
 
 	/**
@@ -100,14 +96,8 @@ public class Elevator extends Subsystem
 	 */
 	public void goToSwitch(boolean front)
 	{
-		goTo(State.SWITCH);
-		if (front)
-		{
-			// put arm at -90 (front)
-		} else
-		{
-			// put arm at 90 (back)
-		}
+		controller.setSetpoint(State.SWITCH.pos);
+	
 	}
 
 	/**

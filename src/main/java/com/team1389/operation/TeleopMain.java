@@ -36,7 +36,7 @@ public class TeleopMain
 	private Subsystem setUpDriveSystem()
 	{
 		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(),
-				controls.rightBumper(), robot.pos, .03);
+				controls.rightBumper(), robot.pos.get(), .03);
 
 	}
 
