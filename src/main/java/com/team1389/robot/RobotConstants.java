@@ -33,6 +33,11 @@ public class RobotConstants {
 	public static final double ElevMaxAcceleration = 0;
 	public static final double ElevMaxDeceleration = 0; 
 	public static final double ElevMaxJerk = 0; 
+	
+	/**
+	 * GyroCorrection for Driving straight
+	 */
+	public static final double GYROCorrection = 0.05;
 
 
 }

@@ -1,6 +1,7 @@
 package com.team1389.operation;
 
 import com.team1389.hardware.controls.ControlBoard;
+import com.team1389.robot.RobotConstants;
 import com.team1389.robot.RobotSoftware;
 import com.team1389.system.Subsystem;
 import com.team1389.system.SystemManager;
@@ -36,7 +37,7 @@ public class TeleopMain
 	private Subsystem setUpDriveSystem()
 	{
 		return new CurvatureDriveSystem(robot.drive.getAsTank(), controls.xDriveY(), controls.xDriveX(),
-				controls.rightBumper(), robot.pos.get(), .03);
+				controls.rightBumper(), robot.pos.get(), RobotConstants.GYROCorrection);
 
 	}
 
