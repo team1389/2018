@@ -108,10 +108,14 @@ public class Robot extends IterativeRobot
 		System.out.println("Trajectory length: " + trajectory.length());
 
 		TankModifier modifier = new TankModifier(trajectory).modify(0.656); // 0.67945
-
+		
 		left = new EncoderFollower(modifier.getLeftTrajectory());
 		right = new EncoderFollower(modifier.getRightTrajectory());
-
+		left.reset();
+		right.reset();
+		lPos.offset(-lPos.get());
+		rPos.offset(-rPos.get());
+		gyro.offset(-gyro.get());
 		left.configureEncoder((int) lPos.get(), 1024, .127);
 		right.configureEncoder((int) rPos.get(), 1024, .127);
 		left.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0), robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)), robot.prefs.getDouble("PathF", 0.0));
@@ -152,25 +156,27 @@ public class Robot extends IterativeRobot
 	@Override
 	public void autonomousPeriodic()
 	{
-
+		SmartDashboard.putNumber("l pos", lPos.get());
+		SmartDashboard.putNumber("r pos", rPos.get());
 		gyroheading = gyro.get();
+		System.out.println("pos is " + left.isFinished());
 
 		double l = left.calculate((int) lPos.get());
 		double r = right.calculate((int) rPos.get());
 		double distance_covered = ((double)(lPos.get() / 1024)
                 * .127 * Math.PI);
-		double error = left.getSegment().position - distance_covered;
-		SmartDashboard.putNumber("error", error);
+	
 		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
 																	// also be
 																	// in
 																	// degrees
 
 		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroheading);
-		double turn = 0.8 * (-1.0 / 80.0) * angleDifference;
-
+		double turn = robot.prefs.getDouble("GyroP", 0.0) * (-1.0 / 80.0) * angleDifference;
+		
 		robot.leftDriveT.getVoltageController().set(l + turn);
 		robot.rightDriveT.getVoltageController().set(r - turn);
+		
 		
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
 		SmartDashboard.putNumber("Angle", robot.pos.get());
@@ -187,8 +193,8 @@ public class Robot extends IterativeRobot
 		// TODO Auto-generated method stub
 		SmartDashboard.putNumber("angle", robot.gyro.getAngleInput().get());
 
-		SmartDashboard.putNumber("Right Talon", rPos.get() / 1024 * .127 * Math.PI);
-		SmartDashboard.putNumber("Left Talon", lPos.get() / 1024 * .127 * Math.PI);
+		SmartDashboard.putNumber("r pos", rPos.get() );
+		SmartDashboard.putNumber("l pos", lPos.get());
 		
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
 		SmartDashboard.putNumber("Angle", robot.pos.get());

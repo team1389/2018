@@ -1,13 +1,13 @@
 package com.team1389.robot;
 
 import com.team1389.hardware.inputs.software.AngleIn;
-import com.team1389.hardware.inputs.software.PositionEncoderIn;
 import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.outputs.software.RangeOut;
 import com.team1389.hardware.value_types.Percent;
 import com.team1389.hardware.value_types.Position;
-import com.team1389.system.drive.DriveOut;
 import com.team1389.system.drive.FourDriveOut;
+
+import edu.wpi.first.wpilibj.Preferences;
 
 public class RobotSoftware extends RobotHardware
 {
@@ -20,14 +20,16 @@ public class RobotSoftware extends RobotHardware
 	public final AngleIn<Position> pos = gyro.getAngleInput();
 	public final RangeIn<Position> leftPos = leftDriveT.getSensorPositionStream();
 	public final RangeIn<Position> rightPos = rightDriveT.getSensorPositionStream();
-
+	public Preferences prefs;
 	public static RobotSoftware getInstance()
 	{
 		return INSTANCE;
 	}
+	
 
 	public RobotSoftware()
 	{
+		prefs = Preferences.getInstance();
 		//PositionEncoderIn.setGlobalWheelDiameter(RobotConstants.WheelDiameter);
 	}
 
