@@ -106,8 +106,11 @@ public class Robot extends IterativeRobot
 		// Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
 		// new Waypoint(0, 0, 0) };
 
+		//Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
+			//	new Waypoint(4.191, 6.477, -1.571) };
+		
 		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-				new Waypoint(4.191, 6.477, -1.571) };
+			new Waypoint(4.191, 6.477, -1.571), new Waypoint(-3.048, 7.62, 0), new Waypoint(.508, 6.731, 0) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
