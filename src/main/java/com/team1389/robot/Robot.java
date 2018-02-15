@@ -6,7 +6,7 @@ import com.team1389.auto.AutoModeExecuter;
 import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.operation.TeleopMain;
-import com.team1389.system.drive.FourWheelSignal;
+//import com.team1389.system.drive.FourWheelSignal;
 import com.team1389.watchers.DashboardInput;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
