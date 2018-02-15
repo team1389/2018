@@ -7,6 +7,7 @@ import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.hardware.value_types.Position;
 import com.team1389.operation.TeleopMain;
+import com.team1389.system.drive.FourWheelSignal;
 import com.team1389.watch.Watcher;
 import com.team1389.watchers.DashboardInput;
 
@@ -77,9 +78,7 @@ public class Robot extends IterativeRobot
 		first = false;
 
 		gyro = robot.angle;
-		System.out.println(robot.prefs.getDouble("killMe", 200));
 		SmartDashboard.putNumber("error", error);
-
 
 		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
 		// LogType.CSV);
@@ -107,10 +106,10 @@ public class Robot extends IterativeRobot
 		// new Waypoint(0, 0, 0) };
 
 		//Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-			//	new Waypoint(4.191, 6.477, -1.571) };
+		//		new Waypoint(4.191, 6.477, -1.2) };//, new Waypoint(4.2, 6.6, 0) };
 		
-		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-			new Waypoint(4.191, 6.477, -1.571), new Waypoint(-3.048, 7.62, 0), new Waypoint(.508, 6.731, 0) };
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new Waypoint(7.62, 2.1336, 0), new Waypoint(5.334, 2.286, 0)};
+
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -132,6 +131,7 @@ public class Robot extends IterativeRobot
 				robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)),
 				robot.prefs.getDouble("PathF", 0.0));
 
+		SmartDashboard.putNumber("MAX VEL", robot.prefs.getDouble("MaxVel", 0));
 	}
 
 	@Override
@@ -153,6 +153,8 @@ public class Robot extends IterativeRobot
 		maxJerk = 0;
 		maxSpeed = 0; // watcher.outputToLog();
 
+		teleOperator.periodic();
+
 	}
 
 	/**
@@ -161,7 +163,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
-
+		robot.drive.set(new FourWheelSignal(0.25, 0.25, 0.25, 0.25));
 	}
 
 	@Override
@@ -188,16 +190,20 @@ public class Robot extends IterativeRobot
 		robot.rightDriveT.getVoltageController().set(r - turn);
 
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
-		SmartDashboard.putNumber("Angle"
-				+ "++"
-				+ "", robot.angle.get());
+		SmartDashboard.putNumber("Angle" + "++" + "", robot.angle.get());
 		if (!left.isFinished())
 		{
-			distance_covered = ((double) (lPos.get()) / 1024) * .127 *Math.PI;
+			distance_covered = ((double) (lPos.get()) / 1024) * .127 * Math.PI;
 			error = left.getSegment().position - distance_covered;
 			SmartDashboard.putNumber("error", error);
 
+			SmartDashboard.putNumber("Error angle does",
+					((robot.gyro.getAngleInput().get() - Pathfinder.r2d(left.getHeading()))
+							+ (robot.gyro.getAngleInput().get() - Pathfinder.r2d(right.getHeading()))) / 2);
+			SmartDashboard.putNumber("Desired heading", (left.getHeading() + right.getHeading()) / 2);
+
 		}
+
 	}
 
 	@Override
@@ -215,5 +221,10 @@ public class Robot extends IterativeRobot
 		SmartDashboard.putNumber("l pos", lPos.get());
 
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
+
+		SmartDashboard.putNumber("Error angle does", 0);
+
+		SmartDashboard.putNumber("Desired heading", 0);
+
 	}
 }
