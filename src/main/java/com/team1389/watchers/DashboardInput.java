@@ -41,7 +41,7 @@ public class DashboardInput {
 				break;
 			}
 		}
-		selectedOption = (AutonOption) autonSelector.getSelected();
+		selectedOption = autonSelector.getSelected();
 		return AutonModeSelector.createAutoMode(selectedOption);
 	}
 
