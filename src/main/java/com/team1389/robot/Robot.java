@@ -76,8 +76,7 @@ public class Robot extends IterativeRobot
 		watcher = new Watcher();
 		first = false;
 
-		gyro = robot.angle;
-		System.out.println(robot.prefs.getDouble("killMe", 200));
+		gyro = robot.angle.invert();
 		SmartDashboard.putNumber("error", error);
 
 
@@ -110,7 +109,7 @@ public class Robot extends IterativeRobot
 			//	new Waypoint(4.191, 6.477, -1.571) };
 		
 		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-			new Waypoint(4.191, 6.477, -1.571), new Waypoint(-3.048, 7.62, 0), new Waypoint(.508, 6.731, 0) };
+			new Waypoint(4.191, 6.477, -1.571), new Waypoint(4.5, 7, -1)  };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -182,10 +181,12 @@ public class Robot extends IterativeRobot
 																	// degrees
 
 		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroheading);
-		double turn = robot.prefs.getDouble("GyroP", 0.0) * (-1.0 / 80.0) * angleDifference;
+		double angleError = (-1.0 / 80.0) * angleDifference;
+		double turn = robot.prefs.getDouble("GyroP", 0.0) * angleError;
+		SmartDashboard.putNumber("angleError",angleError);
 
-		robot.leftDriveT.getVoltageController().set(l + turn);
-		robot.rightDriveT.getVoltageController().set(r - turn);
+		robot.leftDriveT.getVoltageController().set(l - turn);
+		robot.rightDriveT.getVoltageController().set(r + turn);
 
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
 		SmartDashboard.putNumber("Angle"
@@ -195,8 +196,14 @@ public class Robot extends IterativeRobot
 		{
 			distance_covered = ((double) (lPos.get()) / 1024) * .127 *Math.PI;
 			error = left.getSegment().position - distance_covered;
-			SmartDashboard.putNumber("error", error);
+			SmartDashboard.putNumber("errorL", error);
 
+		}
+		if(!right.isFinished())
+		{
+			distance_covered = ((double) (rPos.get()) / 1024) * .127 *Math.PI;
+			error = right.getSegment().position - distance_covered;
+			SmartDashboard.putNumber("errorR", error);
 		}
 	}
 
