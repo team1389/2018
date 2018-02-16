@@ -75,12 +75,13 @@ public class Robot extends IterativeRobot
 		lPos = robot.leftPos.offset(-robot.leftPos.get());
 		rPos = robot.rightPos.offset(-robot.rightPos.get());
 		timer = new Timer();
-		lVel = robot.leftDriveT.getVelocityStream().scale(10).scale(1/1024).scale(.127 * Math.PI);
-		rVel = robot.rightDriveT.getVelocityStream().scale(10).scale(1/1024).scale(.127 * Math.PI);
+		lVel = robot.leftDriveT.getVelocityStream().scale(10).scale(1 / 1024).scale(.127 * Math.PI);
+		rVel = robot.rightDriveT.getVelocityStream().scale(10).scale(1 / 1024).scale(.127 * Math.PI);
 		watcher = new Watcher();
 		first = false;
 
 		gyro = robot.angle;
+		gyro = robot.angle.invert();
 		SmartDashboard.putNumber("error", error);
 
 		// LogFile log = new LogFile("roborio-1389-frc.local/src/LogFile",
@@ -108,11 +109,15 @@ public class Robot extends IterativeRobot
 		// Pathfinder.d2r(-45)), new Waypoint(-2, -2, 0),
 		// new Waypoint(0, 0, 0) };
 
-		//Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
-		//		new Waypoint(4.191, 6.477, -1.2) };//, new Waypoint(4.2, 6.6, 0) };
-		
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new Waypoint(7.62, 2.1336, 0), new Waypoint(5.334, 2.286, 0)};
+		// Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0),
+		// new Waypoint(3.048, 7.62, -0.349),
+		// new Waypoint(4.191, 6.477, -1.2) };//, new Waypoint(4.2, 6.6, 0) };
 
+		// Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new
+		// Waypoint(7.62, 2.1336, 0), new Waypoint(5.334, 2.286, 0)};
+
+		Waypoint[] points = new Waypoint[] { new Waypoint(.508, 6.731, 0.0), new Waypoint(3.048, 7.62, -0.349),
+				new Waypoint(4.191, 6.477, -1.571), new Waypoint(4.5, 7, -1) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
@@ -187,11 +192,16 @@ public class Robot extends IterativeRobot
 																	// degrees
 
 		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroheading);
-		double turn = robot.prefs.getDouble("GyroP", 0.0) * (-1.0 / 80.0) * angleDifference;
+		double angleError = (-1.0 / 80.0) * angleDifference;
+		double turn = robot.prefs.getDouble("GyroP", 0.0) * angleError;
+		SmartDashboard.putNumber("angleError",angleError);
 
 		robot.leftDriveT.getVoltageController().set(l + turn);
 		robot.rightDriveT.getVoltageController().set(r - turn);
 SmartDashboard.putBoolean("left is finished", left.isFinished());
+		robot.leftDriveT.getVoltageController().set(l - turn);
+		robot.rightDriveT.getVoltageController().set(r + turn);
+
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
 		SmartDashboard.putNumber("Angle" + "++" + "", robot.angle.get());
 		if (!left.isFinished())
@@ -206,14 +216,19 @@ SmartDashboard.putBoolean("left is finished", left.isFinished());
 					((robot.gyro.getAngleInput().get() - Pathfinder.r2d(left.getHeading()))
 							+ (robot.gyro.getAngleInput().get() - Pathfinder.r2d(right.getHeading()))) / 2);
 			SmartDashboard.putNumber("Desired heading", (left.getHeading() + right.getHeading()) / 2);
+			SmartDashboard.putNumber("errorL", error);
 
 		}
-		if (!right.isFinished())
+
+
+		if(!right.isFinished())
 		{
+			distance_covered = ((double) (rPos.get()) / 1024) * .127 *Math.PI;
+			error = right.getSegment().position - distance_covered;
+			SmartDashboard.putNumber("errorR", error);
 			SmartDashboard.putNumber("right expected vel", right.getSegment().velocity);
 			SmartDashboard.putNumber("right actual vel", rVel.get());
 		}
-
 	}
 
 	@Override
