@@ -6,6 +6,7 @@ import com.team1389.hardware.inputs.software.AngleIn;
 import com.team1389.hardware.inputs.software.RangeIn;
 import com.team1389.hardware.registry.Registry;
 import com.team1389.hardware.value_types.Position;
+import com.team1389.hardware.value_types.Speed;
 import com.team1389.operation.TeleopMain;
 import com.team1389.system.drive.FourWheelSignal;
 import com.team1389.watch.Watcher;
@@ -34,6 +35,7 @@ public class Robot extends IterativeRobot
 	AutoModeExecuter autoModeExecuter;
 	Registry registry;
 	RangeIn<Position> lPos, rPos;
+	RangeIn<Speed> lVel, rVel;
 	EncoderFollower left;
 	EncoderFollower right;
 	Watcher watcher;
@@ -73,7 +75,8 @@ public class Robot extends IterativeRobot
 		lPos = robot.leftPos.offset(-robot.leftPos.get());
 		rPos = robot.rightPos.offset(-robot.rightPos.get());
 		timer = new Timer();
-
+		lVel = robot.leftDriveT.getVelocityStream().scale(10).scale(1/1024).scale(.127 * Math.PI);
+		rVel = robot.rightDriveT.getVelocityStream().scale(10).scale(1/1024).scale(.127 * Math.PI);
 		watcher = new Watcher();
 		first = false;
 
@@ -188,7 +191,7 @@ public class Robot extends IterativeRobot
 
 		robot.leftDriveT.getVoltageController().set(l + turn);
 		robot.rightDriveT.getVoltageController().set(r - turn);
-
+SmartDashboard.putBoolean("left is finished", left.isFinished());
 		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
 		SmartDashboard.putNumber("Angle" + "++" + "", robot.angle.get());
 		if (!left.isFinished())
@@ -196,12 +199,19 @@ public class Robot extends IterativeRobot
 			distance_covered = ((double) (lPos.get()) / 1024) * .127 * Math.PI;
 			error = left.getSegment().position - distance_covered;
 			SmartDashboard.putNumber("error", error);
-
+			SmartDashboard.putNumber("left expected vel", left.getSegment().velocity);
+			SmartDashboard.putNumber("left actual vel", lVel.get());
+			
 			SmartDashboard.putNumber("Error angle does",
 					((robot.gyro.getAngleInput().get() - Pathfinder.r2d(left.getHeading()))
 							+ (robot.gyro.getAngleInput().get() - Pathfinder.r2d(right.getHeading()))) / 2);
 			SmartDashboard.putNumber("Desired heading", (left.getHeading() + right.getHeading()) / 2);
 
+		}
+		if (!right.isFinished())
+		{
+			SmartDashboard.putNumber("right expected vel", right.getSegment().velocity);
+			SmartDashboard.putNumber("right actual vel", rVel.get());
 		}
 
 	}
