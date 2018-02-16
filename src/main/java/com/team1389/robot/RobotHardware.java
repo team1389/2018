@@ -5,9 +5,9 @@ import com.team1389.hardware.inputs.hardware.SpartanGyro;
 import com.team1389.hardware.outputs.hardware.CANTalonHardware;
 import com.team1389.hardware.outputs.hardware.VictorHardware;
 import com.team1389.hardware.registry.Registry;
-//import com.team1389.hardware.registry.port_types.SPIPort;
+import com.team1389.hardware.registry.port_types.SPIPort;
 
-//import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.SPI.Port;
 
 /**
  * responsible for initializing and storing hardware objects defined in
