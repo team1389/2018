@@ -14,9 +14,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
 import jaci.pathfinder.Waypoint;
-import jaci.pathfinder.followers.EncoderFollower;
+import jaci.pathfinder.followers.DistanceFollower;
 import jaci.pathfinder.modifiers.TankModifier;
-
 
 public class Robot extends IterativeRobot
 {
@@ -26,14 +25,12 @@ public class Robot extends IterativeRobot
 	Registry registry;
 	RangeIn<Position> lPos, rPos;
 	RangeIn<Speed> lVel, rVel;
-	EncoderFollower left;
-	EncoderFollower right;
+	DistanceFollower left;
+	DistanceFollower right;
 
 	Trajectory trajectory;
 
-
 	AngleIn gyro;
-
 
 	@Override
 	public void robotInit()
@@ -46,7 +43,6 @@ public class Robot extends IterativeRobot
 
 		gyro = robot.angle;
 
-
 	}
 
 	@Override
@@ -58,21 +54,19 @@ public class Robot extends IterativeRobot
 		Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC,
 				Trajectory.Config.SAMPLES_HIGH, 0.05, robot.prefs.getDouble("MaxVel", 0.0),
 				robot.prefs.getDouble("MaxAccel", 0.0), robot.prefs.getDouble("MaxJerk", 0.0));
-
-		Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new Waypoint(7.62, 2.1336, 0), new Waypoint(5.334, 2.286, 0)};
-
+		// Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new
+		// Waypoint(7.62, 2.1336, 0)};
+		Waypoint[] points = new Waypoint[] { new Waypoint(0, .9144, 0), new Waypoint(2, .9144, 0) };
 		trajectory = Pathfinder.generate(points, config);
 		System.out.println("Trajectory length: " + trajectory.length());
 
-		TankModifier modifier = new TankModifier(trajectory).modify(0.656); 
+		TankModifier modifier = new TankModifier(trajectory).modify(0.656);
 
-		left = new EncoderFollower(modifier.getLeftTrajectory());
-		right = new EncoderFollower(modifier.getRightTrajectory());
+		left = new DistanceFollower(modifier.getLeftTrajectory());
+		right = new DistanceFollower(modifier.getRightTrajectory());
 		left.reset();
 		right.reset();
-		gyro.offset(-gyro.get());
-		left.configureEncoder((int) lPos.get(), 1024, .127);
-		right.configureEncoder((int) rPos.get(), 1024, .127);
+		gyro = (AngleIn) gyro.offset(-gyro.get());
 		left.configurePIDVA(robot.prefs.getDouble("PathP", 0.0), robot.prefs.getDouble("PathI", 0.0),
 				robot.prefs.getDouble("PathD", 0.0), (1 / robot.prefs.getDouble("MaxVel", 0.0)),
 				robot.prefs.getDouble("PathF", 0.0));
@@ -88,10 +82,7 @@ public class Robot extends IterativeRobot
 	{
 		autoModeExecuter.stop();
 
-		
 		teleOperator.init();
-
-
 
 	}
 
@@ -101,19 +92,25 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{
+		robot.drive.getAsTank().set(0.25, 0.25);
+
 	}
 
 	@Override
 	public void autonomousPeriodic()
 	{
-		SmartDashboard.putNumber("l pos", lPos.get());
+		SmartDashboard.putNumber("l pos(ticks)", lPos.get());
 		SmartDashboard.putNumber("r pos", rPos.get());
 		double gyroHeading = gyro.get();
 		System.out.println("pos is " + left.isFinished());
-
-		double l = left.calculate((int) lPos.get());
-		double r = right.calculate((int) rPos.get());
-		double distance_covered = ((double) (lPos.get() / 1024) * .127 * Math.PI);
+//		 double leftDistance = (lPos.get()) / 1024 * .127 * Math.PI;
+//		 double rightDistance = (rPos.get()) / 1024 * .127 * Math.PI;
+		 double leftDistance = lPos.get()/1024;
+		 double rightDistance = rPos.get()/1024;
+		double l = left.calculate((int) leftDistance);
+		double r = right.calculate((int) rightDistance);
+		SmartDashboard.putNumber("left distance", leftDistance);
+		SmartDashboard.putNumber("right distance", rightDistance);
 
 		double desired_heading = Pathfinder.r2d(left.getHeading()); // Should
 																	// also be
@@ -123,37 +120,32 @@ public class Robot extends IterativeRobot
 		double angleDifference = Pathfinder.boundHalfDegrees(desired_heading - gyroHeading);
 		double angleError = (-1.0 / 80.0) * angleDifference;
 		double turn = robot.prefs.getDouble("GyroP", 0.0) * angleError;
-		SmartDashboard.putNumber("angleError",angleError);
-
-		robot.leftDriveT.getVoltageController().set(l + turn);
-		robot.rightDriveT.getVoltageController().set(r - turn);
-
-		SmartDashboard.putNumber("Speed", robot.leftDriveT.getVelocityStream().get() * 10);
-		SmartDashboard.putNumber("Angle" + "++" + "", robot.angle.get());
+		SmartDashboard.putNumber("angleError", angleError);
+		// robot.drive.getAsTank().set(l+turn, r-turn);
+		robot.drive.getAsTank().set(l, r);
+		SmartDashboard.putNumber("Angle ", robot.angle.get());
 		if (!left.isFinished())
 		{
-			distance_covered = ((double) (lPos.get()) / 1024) * .127 * Math.PI;
-			double error = left.getSegment().position - distance_covered;
-			SmartDashboard.putNumber("error", error);
+			double error = left.getSegment().position - leftDistance;
 			SmartDashboard.putNumber("left expected vel", left.getSegment().velocity);
 			SmartDashboard.putNumber("left actual vel", lVel.get());
-			
+
 			SmartDashboard.putNumber("angle error",
 					((robot.gyro.getAngleInput().get() - Pathfinder.r2d(left.getHeading()))
 							+ (robot.gyro.getAngleInput().get() - Pathfinder.r2d(right.getHeading()))) / 2);
 			SmartDashboard.putNumber("Desired heading", (left.getHeading() + right.getHeading()) / 2);
-			SmartDashboard.putNumber("errorL", error);
+			SmartDashboard.putNumber("left expected pos", left.getSegment().position);
 
 		}
 
-
-		if(!right.isFinished())
+		if (!right.isFinished())
 		{
-			distance_covered = ((double) (rPos.get()) / 1024) * .127 *Math.PI;
-			double error = right.getSegment().position - distance_covered;
+			double error = right.getSegment().position - rightDistance;
 			SmartDashboard.putNumber("errorR", error);
 			SmartDashboard.putNumber("right expected vel", right.getSegment().velocity);
 			SmartDashboard.putNumber("right actual vel", rVel.get());
+			SmartDashboard.putNumber("right expected pos", right.getSegment().position);
+
 		}
 	}
 
